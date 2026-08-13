@@ -2,9 +2,9 @@
 
 # 🍽️ Lezzet Bahçesi
 
-### Restoran Operasyon Yönetim Paneli & Analitik Dashboard
+### Restoran Yönetim Paneli & Analitik Dashboard
 
-*Rezervasyonlar, siparişler, menü ve müşteri geri bildirimleri — tek ekranda, canlı verilerle.*
+*Rezervasyonlar, menü, kategoriler ve müşteri değerlendirmeleri — tek panelden, canlı verilerle.*
 
 <br>
 
@@ -31,15 +31,16 @@
 - [Ekran Görüntüleri](#-ekran-görüntüleri)
 - [Teknoloji Yığını](#️-teknoloji-yığını)
 - [Sistem Mimarisi](#️-sistem-mimarisi)
+- [ViewComponent Kompozisyonu](#-viewcomponent-kompozisyonu)
 - [Klasör Yapısı](#-klasör-yapısı)
 - [Veritabanı Tasarımı & ER Diyagramı](#️-veritabanı-tasarımı--er-diyagramı)
 - [UML Diyagramları](#-uml-diyagramları)
-- [İstek Yaşam Döngüsü](#-i̇stek-yaşam-döngüsü-request-lifecycle)
+- [İstek Yaşam Döngüsü](#-i̇stek-yaşam-döngüsü)
 - [Kurulum ve Çalıştırma](#-kurulum-ve-çalıştırma)
-- [Yapılandırma](#-yapılandırma)
+- [Yapılandırma](#️-yapılandırma)
 - [Rota Haritası](#️-rota-haritası)
 - [Sık Karşılaşılan Sorunlar](#-sık-karşılaşılan-sorunlar)
-- [Yol Haritası](#-yol-haritası)
+- [Yol Haritası](#️-yol-haritası)
 - [Katkıda Bulunma](#-katkıda-bulunma)
 - [Lisans](#-lisans)
 - [Geliştirici](#️-geliştirici)
@@ -48,89 +49,73 @@
 
 ## 🎯 Proje Hakkında
 
-Bir restoranın günlük işleyişinde veriler dağınıktır: rezervasyon defteri ayrı, sipariş fişleri ayrı, müşteri yorumları ayrı bir yerdedir. **Lezzet Bahçesi**, bu parçalı akışı tek bir yönetim panelinde toplayarak işletme sahibinin *"Bugün kaç rezervasyon var? Hangi saatler yoğun? Hangi ürün beğenilmiyor?"* sorularına saniyeler içinde cevap vermesini sağlar.
+Bir restoranın günlük işleyişinde veriler dağınıktır: rezervasyon defteri ayrı, menü ayrı, müşteri yorumları bambaşka bir yerdedir. **Lezzet Bahçesi**, bu parçalı akışı tek bir yönetim panelinde toplayarak *"Bugün kaç rezervasyon var? Hangi gün ve saatler yoğun? Hangi ürün beğenilmiyor?"* sorularına saniyeler içinde cevap verir.
 
-Uygulama **ASP.NET Core MVC** üzerine kurulmuş, veri katmanında **PostgreSQL + Entity Framework Core (Code First)** kullanan, katmanlı mimari ilkelerine sadık bir web projesidir. Arayüz parçaları **ViewComponent**'ler ile modülerleştirilmiş, katmanlar arası veri taşıma **DTO** desenleriyle izole edilmiştir.
+Uygulama **ASP.NET Core MVC** üzerine kurulu, veri katmanında **PostgreSQL + Entity Framework Core (Code First)** kullanan bir web projesidir. En ayırt edici tarafı, sayfaların monolitik `.cshtml` dosyaları yerine **ViewComponent kompozisyonu** ile inşa edilmiş olmasıdır: her başlık, her grafik, her tablo kendi verisini kendi çeken bağımsız bir bileşendir.
 
 ### Neden bu proje?
 
 | Problem | Çözüm |
 |---|---|
-| Rezervasyon yoğunluğu tahmine dayalı yönetiliyor | Gün × saat kırılımlı **ısı haritası** ile gerçek yoğunluk görselleştirmesi |
-| Yorumlar denetimsiz yayınlanıyor | **Admin onay mekanizması** ile `Status` bazlı moderasyon |
+| Rezervasyon yoğunluğu tahminle yönetiliyor | Gün × saat kırılımlı **ısı haritası** ile gerçek yoğunluk görselleştirmesi |
+| Yorumlar denetimsiz yayınlanıyor | `Status` alanı üzerinden **admin onay mekanizması** |
 | Menü performansı ölçülemiyor | Kategori bazlı **ürün dağılımı** ve **ortalama fiyat** analizleri |
-| Veriler farklı ekranlara dağılmış | Tek sayfada **canlı metrik kartları** ve aktivite akışı |
+| View dosyaları şişiyor, bakımı zorlaşıyor | Sayfa başına 5–10 **bağımsız ViewComponent** |
 
 ### Temel Tasarım Kararları
 
-- **Controller'lar ince tutuldu** — iş mantığı servis katmanında, veri erişimi repository katmanında.
-- **Entity'ler asla View'a gönderilmedi** — tüm sunum verisi DTO üzerinden aktarılır (over-posting ve lazy-loading tuzaklarına karşı).
-- **Dashboard bileşenleri bağımsız** — her kart/grafik kendi ViewComponent'i olduğu için biri hata verse bile sayfanın geri kalanı ayakta kalır.
-- **Null-safe sorgular** — analitik sorgularda `??`, `DefaultIfEmpty()` ve `GroupBy` sonrası güvenli projeksiyon kullanılarak boş veri setlerinde çökme engellendi.
+- **Sayfa = bileşen kompozisyonu.** `Dashboard/Index.cshtml` yalnızca ViewComponent çağrılarından oluşur; başlık, istatistik kartları, üç grafik, son rezervasyonlar, son yorumlar ve script bloğu ayrı ayrı bileşenlerdir. Biri hata verse sayfanın geri kalanı ayakta kalır.
+- **Entity'ler asla View'a gönderilmez.** Tüm sunum verisi `Dtos/` altındaki özelleşmiş DTO'lar üzerinden taşınır; dönüşüm `Mapping/` klasöründeki profil ile merkezîdir.
+- **İnce controller.** Controller yalnızca isteği karşılar; sorgu ve hesaplama `Services/` katmanındadır.
+- **Null-safe analitik.** Isı haritası ve grafik sorgularında veri bulunmayan gün/saat kombinasyonları `0` olarak normalize edilir, matriste boşluk oluşmaz.
 
 ---
 
 ## 🚀 Öne Çıkan Özellikler
 
-<details open>
-<summary><h3>📊 1. Dinamik Dashboard & İstatistik Paneli</h3></summary>
+### 📊 1. Dashboard — Yönetim Paneli Ana Ekranı
 
-**Canlı Metrik Kartları**
-- Toplam rezervasyon sayısı
-- Bekleyen / Onaylanan / İptal edilen rezervasyon kırılımı
-- Bugünkü sipariş adedi
-- Toplam müşteri sayısı
-- Aktif menü ürünü sayısı
+`DashboardController` + `DashboardViewComponents` ile kurulmuştur.
 
-**Görsel Analiz Grafikleri (Chart.js)**
+| Bileşen | Görevi |
+|---|---|
+| `_DashboardStatisticsCardsComponentPartial` | Toplam rezervasyon, bekleyen/onaylanan/iptal kırılımı, toplam ürün, kategori ve yorum sayısı |
+| `_DashboardLineChartComponentPartial` | Günlük rezervasyon trendi (Line) |
+| `_DashboardBarChartComponentPartial` | Kategoriye göre ürün dağılımı (Bar) |
+| `_DashboardPieChartComponentPartial` | Kategori ortalama fiyatları (Pie / Doughnut) |
+| `_DashboardLastReservationsComponentPartial` | Son rezervasyon kayıtları tablosu |
+| `_DashboardLastReviewsComponentPartial` | Son gelen yorumlar akışı |
+| `_DashboardQuickActionsComponentPartial` | Sık kullanılan işlemlere hızlı erişim kısayolları |
+| `_DashboardHeaderComponentPartial` | Panel üst başlığı ve özet bilgi |
+| `_DashboardScriptsComponentPartial` | Chart.js konfigürasyonlarının tek noktadan yüklenmesi |
 
-| Grafik | Tür | Ne Anlatır? |
-|---|---|---|
-| 📈 Günlük Rezervasyon Trendi | Line | Son 7 günün rezervasyon hareketi, artış/düşüş eğilimi |
-| 📊 Kategoriye Göre Ürün Dağılımı | Bar | Hangi kategoride kaç aktif ürün var, menü dengesi |
-| 🍩 Kategori Ortalama Fiyatları | Doughnut | Kategorilerin fiyat konumlanması + özel kaydırmalı (custom scrollbar) renkli liste |
+### 🔥 2. İstatistik & Isı Haritası Sayfası
 
-**Canlı Aktivite Akışı** — Son işlemler (yeni rezervasyon, yeni yorum, sipariş) zaman sıralı akış olarak listelenir.
+`StatisticsController` + `StatisticsViewComponents` ile kurulmuştur.
 
-</details>
+- **`_StatisticsHeatmapComponentPartial`** — Haftanın günleri (satır) × saat dilimleri (sütun) matrisinde rezervasyon yoğunluğu. Hücre rengi rezervasyon sayısıyla orantılı koyulaşır; personel vardiyası ve stok planlaması için doğrudan kullanılabilir bir çıktı üretir.
+- **`_StatisticsBigGridComponentPartial`** — Genel metriklerin geniş ızgara görünümü.
+- **`_StatisticsCategoryTableComponentPartial`** — Kategori bazlı ürün sayısı ve ortalama fiyat tablosu.
+- **`_StatisticsHeroComponentPartial`** — Sayfa üst bölümü ve öne çıkan metrik özeti.
 
-<details open>
-<summary><h3>💬 2. Müşteri Değerlendirmeleri (Review Management)</h3></summary>
+### 💬 3. Müşteri Değerlendirmeleri (Review) Modülü
 
-- **Ürün bazlı yorum sistemi:** Her menü ürünü için ayrı puanlama (1–5 ⭐) ve serbest metin değerlendirmesi.
-- **Admin onay mekanizması:** Yorumlar varsayılan olarak `Pending` durumunda kaydedilir; yalnızca `Approved` olanlar müşteri tarafında görünür.
-- **Toplu moderasyon:** Panelden onayla / reddet / sil aksiyonları.
-- **Ortalama puan hesabı:** Ürünün ortalama yıldızı yalnızca onaylı yorumlar üzerinden hesaplanır.
+- **Ürün bazlı yorum sistemi:** Her ürün için ayrı puanlama (1–5 ⭐) ve serbest metin değerlendirmesi.
+- **Onay mekanizması:** Yorumlar `Status = false` ile kaydedilir; yalnızca onaylananlar menüde görünür.
+- **Moderasyon paneli:** `ReviewController` üzerinden onayla / reddet / sil aksiyonları.
+- **Ortalama puan:** Ürünün yıldız ortalaması yalnızca onaylı yorumlar üzerinden hesaplanır.
 
-</details>
+### 📅 4. Rezervasyon Yönetimi
 
-<details open>
-<summary><h3>🔥 3. Isı Haritası & Yoğunluk Analizi (Heatmap)</h3></summary>
+- Durum makinesiyle yönetilen akış: `Bekliyor → Onaylandı → Tamamlandı` / `İptal`.
+- Ad, telefon, e-posta, kişi sayısı, tarih, saat ve açıklama alanları.
+- Tarihe ve duruma göre filtreleme; ısı haritasının veri kaynağı bu tablodur.
 
-- **Matris tabanlı görselleştirme:** Haftanın günleri (satır) × saat dilimleri (sütun: 12:00, 14:00, 16:00, 18:00, 20:00, 22:00).
-- **Renk yoğunluğu:** Hücre rengi o gün/saatteki rezervasyon sayısıyla orantılı olarak koyulaşır.
-- **Operasyonel katkı:** Personel vardiya planlaması ve stok hazırlığı için yoğun saatlerin tespiti.
-- **Null-safe veri işleme:** Rezervasyon olmayan gün/saat kombinasyonları `0` olarak normalize edilir; matriste boşluk oluşmaz.
+### 🍕 5. Menü & Kategori Yönetimi
 
-</details>
-
-<details>
-<summary><h3>📅 4. Rezervasyon Yönetimi</h3></summary>
-
-- Durum makinesi ile yönetilen rezervasyon akışı (`Pending → Approved → Completed` / `Cancelled` / `NoShow`).
-- Tarih, saat, kişi sayısı, masa ve iletişim bilgisi alanları.
-- Filtreleme: tarihe, duruma ve müşteriye göre.
-
-</details>
-
-<details>
-<summary><h3>🍕 5. Menü & Kategori Yönetimi</h3></summary>
-
-- Kategori CRUD işlemleri, aktif/pasif durum yönetimi.
-- Ürün CRUD işlemleri: ad, açıklama, fiyat, görsel, kategori ilişkisi.
-- Pasife alınan kategorinin ürünleri analitiklerden otomatik olarak düşer.
-
-</details>
+- `CategoryController` ve `ProductController` üzerinden tam CRUD.
+- Kategori/ürün `Status` alanı ile aktif–pasif yönetimi; pasif kayıtlar analitiklerden otomatik düşer.
+- **`MenuController` + `MenuViewComponents`** ile ziyaretçiye açık menü sayfası: navbar, üst görsel bölümü, ürün listesi, mobil görünüm ve footer ayrı bileşenlerdir.
 
 ---
 
@@ -140,11 +125,11 @@ Uygulama **ASP.NET Core MVC** üzerine kurulmuş, veri katmanında **PostgreSQL 
 
 <div align="center">
 
-| Dashboard Ana Ekran | Kategori & Grafik Analizleri |
+| Dashboard Ana Ekran | İstatistik & Grafikler |
 |:---:|:---:|
-| <img src="wwwroot/images/screenshots/dashboard.png" width="420" alt="Dashboard"/> | <img src="wwwroot/images/screenshots/charts.png" width="420" alt="Grafikler"/> |
-| **Rezervasyon Isı Haritası** | **Yorum Moderasyon Paneli** |
-| <img src="wwwroot/images/screenshots/heatmap.png" width="420" alt="Isı Haritası"/> | <img src="wwwroot/images/screenshots/reviews.png" width="420" alt="Yorumlar"/> |
+| <img src="wwwroot/images/screenshots/dashboard.png" width="420" alt="Dashboard"/> | <img src="wwwroot/images/screenshots/statistics.png" width="420" alt="İstatistikler"/> |
+| **Rezervasyon Isı Haritası** | **Menü Sayfası** |
+| <img src="wwwroot/images/screenshots/heatmap.png" width="420" alt="Isı Haritası"/> | <img src="wwwroot/images/screenshots/menu.png" width="420" alt="Menü"/> |
 
 </div>
 
@@ -152,156 +137,193 @@ Uygulama **ASP.NET Core MVC** üzerine kurulmuş, veri katmanında **PostgreSQL 
 
 ## 🛠️ Teknoloji Yığını
 
-| Katman | Teknoloji | Kullanım Amacı |
+| Alan | Teknoloji | Kullanım Amacı |
 |---|---|---|
-| **Dil & Runtime** | C# 12, .NET 8.0 | Uygulama çekirdeği |
+| **Dil & Runtime** | C# 12, .NET 6.0 | Uygulama çekirdeği |
 | **Web Framework** | ASP.NET Core MVC | Controller / View / Routing altyapısı |
 | **ORM** | Entity Framework Core 8 | Code First, LINQ sorguları, Migration yönetimi |
-| **Veritabanı** | PostgreSQL 16 | İlişkisel veri deposu |
+| **Veritabanı** | PostgreSQL | İlişkisel veri deposu (`DinnerMenuDb`) |
 | **DB Sağlayıcı** | Npgsql.EntityFrameworkCore.PostgreSQL | EF Core ↔ PostgreSQL köprüsü |
+| **Nesne Dönüşümü** | AutoMapper | Entity ↔ DTO dönüşümü (`Mapping/`) |
 | **Frontend** | HTML5, CSS3, JavaScript (ES6+) | Arayüz ve etkileşim |
-| **UI Kütüphanesi** | Bootstrap 5.3 | Responsive grid, bileşenler |
-| **Görselleştirme** | Chart.js 4 | Line / Bar / Doughnut grafikleri |
+| **UI Kütüphanesi** | Bootstrap 5 | Responsive grid ve bileşenler |
+| **Görselleştirme** | Chart.js | Line / Bar / Pie grafikleri |
 | **Şablon Motoru** | Razor (.cshtml) | Sunucu taraflı render |
-| **Mimari Desenler** | Repository, DTO, ViewComponent, Dependency Injection | Modülerlik ve test edilebilirlik |
-| **Araçlar** | Visual Studio 2022 / VS Code, pgAdmin 4, Git | Geliştirme ortamı |
+| **Mimari Yaklaşım** | ViewComponent, DTO, Service Layer, Dependency Injection | Modülerlik ve bakım kolaylığı |
 
 ---
 
 ## 🏗️ Sistem Mimarisi
 
-Proje, sorumlulukların net biçimde ayrıldığı **katmanlı (layered) mimari** ile kurgulanmıştır. Üst katman yalnızca bir alt katmanı tanır; ters yönde bağımlılık yoktur.
+Proje, sorumlulukların net biçimde ayrıldığı katmanlı bir yapıdadır. Controller iş mantığı içermez; hesaplama servis katmanında, veri erişimi `Context` üzerinden yapılır.
 
 ```mermaid
 flowchart TB
-    subgraph Client["🌐 İstemci Katmanı"]
-        B["Tarayıcı<br/>HTML • CSS • Bootstrap 5"]
-        JS["Chart.js<br/>Grafik Render"]
+    subgraph L1["1 - Istemci Katmani"]
+        BR["Tarayici (Bootstrap 5)"]
+        CJ["Chart.js"]
     end
 
-    subgraph Presentation["🎨 Sunum Katmanı — ASP.NET Core MVC"]
-        CT["Controllers<br/>Home • Reservation • Product • Review"]
-        VC["ViewComponents<br/>StatCards • Charts • Heatmap • ActivityFeed"]
-        VW["Razor Views<br/>.cshtml"]
+    subgraph L2["2 - Sunum Katmani (ASP.NET Core MVC)"]
+        CT["Controllers"]
+        VC["ViewComponents"]
+        VW["Razor Views"]
     end
 
-    subgraph Application["⚙️ İş Katmanı"]
-        SV["Services<br/>DashboardService • ReservationService • ReviewService"]
-        DTO["DTOs<br/>Veri Taşıma Nesneleri"]
-        MP["Mapping<br/>Entity → DTO Projeksiyonu"]
+    subgraph L3["3 - Is Katmani"]
+        SV["Services"]
+        DTO["Dtos"]
+        MP["Mapping (AutoMapper)"]
     end
 
-    subgraph Data["🗄️ Veri Erişim Katmanı"]
-        RP["Repositories<br/>IRepository&lt;T&gt; • GenericRepository&lt;T&gt;"]
-        CX["AppDbContext<br/>EF Core"]
+    subgraph L4["4 - Veri Erisim Katmani"]
+        CX["Context / DbContext"]
+        EN["Entities"]
     end
 
-    subgraph Database["💾 Veritabanı"]
-        PG[("PostgreSQL<br/>DinnerMenuDb")]
-    end
+    DB[("PostgreSQL - DinnerMenuDb")]
 
-    B --> CT
-    JS -.->|"JSON veri talebi"| CT
+    BR --> CT
+    CJ --> CT
     CT --> VC
     VC --> VW
-    VW --> B
+    VW --> BR
     CT --> SV
     VC --> SV
-    SV --> DTO
     SV --> MP
-    SV --> RP
-    RP --> CX
-    CX --> PG
-
-    style Client fill:#e3f2fd,stroke:#1976d2
-    style Presentation fill:#f3e5f5,stroke:#7b1fa2
-    style Application fill:#fff3e0,stroke:#f57c00
-    style Data fill:#e8f5e9,stroke:#388e3c
-    style Database fill:#fce4ec,stroke:#c2185b
+    MP --> DTO
+    SV --> CX
+    CX --> EN
+    CX --> DB
 ```
 
-### Uygulanan Tasarım Desenleri
+### Uygulanan Yaklaşımlar
 
-| Desen | Nerede? | Kazanım |
+| Yaklaşım | Nerede? | Kazanım |
 |---|---|---|
-| **Repository Pattern** | `Repositories/` | Veri erişim mantığı soyutlandı; `DbContext` iş katmanına sızmıyor |
-| **DTO Pattern** | `DTOs/` | Entity'ler View'a gönderilmiyor; yalnızca gerekli alanlar taşınıyor |
-| **ViewComponent** | `ViewComponents/` | Dashboard'daki her bileşen bağımsız, yeniden kullanılabilir ve kendi verisini çeken bir birim |
-| **Dependency Injection** | `Program.cs` | Servis ve repository'ler constructor üzerinden enjekte ediliyor; gevşek bağlılık |
-| **Code First + Migrations** | `Migrations/` | Şema versiyonlanıyor, ekipler arası tutarlılık sağlanıyor |
+| **ViewComponent Kompozisyonu** | `ViewComponents/`, `Views/Shared/Components/` | Her sayfa parçası bağımsız, yeniden kullanılabilir ve kendi verisini çeken bir birim |
+| **DTO Pattern** | `Dtos/` (özellik bazlı alt klasörler) | Entity'ler View'a sızmaz; yalnızca gerekli alanlar taşınır |
+| **AutoMapper Profili** | `Mapping/` | Dönüşüm mantığı tek noktada, controller'lar temiz |
+| **Service Layer** | `Services/` | İş kuralları ve analitik hesaplamalar controller'dan ayrıştırılmış |
+| **Dependency Injection** | `Program.cs` | Servisler ve `DbContext` constructor üzerinden enjekte edilir |
+| **Code First + Migrations** | `Migrations/` | Şema versiyonlanır, ortamlar arası tutarlılık sağlanır |
+| **Özellik Bazlı Klasörleme** | `Dtos/`, `ViewComponents/` | `CategoryDtos`, `ChartDtos`, `DashboardViewComponents`... — dosya bulmak kolay |
+
+---
+
+## 🧩 ViewComponent Kompozisyonu
+
+Projenin en karakteristik yanı budur: bir sayfa tek parça `.cshtml` değil, birden fazla bağımsız bileşenin bir araya gelmesidir.
+
+```mermaid
+flowchart LR
+    subgraph P1["Dashboard Sayfasi"]
+        D1["_DashboardHeadComponentPartial"]
+        D2["_DashboardHeaderComponentPartial"]
+        D3["_DashboardStatisticsCardsComponentPartial"]
+        D4["_DashboardLineChartComponentPartial"]
+        D5["_DashboardBarChartComponentPartial"]
+        D6["_DashboardPieChartComponentPartial"]
+        D7["_DashboardLastReservationsComponentPartial"]
+        D8["_DashboardLastReviewsComponentPartial"]
+        D9["_DashboardQuickActionsComponentPartial"]
+        D10["_DashboardScriptsComponentPartial"]
+    end
+
+    subgraph P2["Istatistik Sayfasi"]
+        S1["_StatisticsHeroComponentPartial"]
+        S2["_StatisticsBigGridComponentPartial"]
+        S3["_StatisticsCategoryTableComponentPartial"]
+        S4["_StatisticsHeatmapComponentPartial"]
+    end
+
+    subgraph P3["Menu Sayfasi"]
+        M1["_MenuHeadComponentPartial"]
+        M2["_MenuNavbarComponentPartial"]
+        M3["_MenuTopImageSectionComponentPartial"]
+        M4["_MenuListComponentPartial"]
+        M5["_MenuMobileComponentPartial"]
+        M6["_MenuFooterComponentPartial"]
+        M7["_MenuScriptsComponentPartial"]
+    end
+```
+
+Ortak grafik altyapısı `ChartViewComponents/_ChartComponentPartial` içinde toplanmıştır; Chart.js yapılandırması tekrar edilmez.
 
 ---
 
 ## 📁 Klasör Yapısı
 
 ```
-LezzetBahcesi/
+DinnerMenu/
+│
+├── 📂 Context/                             # EF Core DbContext
+│   └── DinnerMenuContext.cs
 │
 ├── 📂 Controllers/
-│   ├── HomeController.cs              # Dashboard giriş noktası
-│   ├── ReservationController.cs       # Rezervasyon CRUD & filtreleme
-│   ├── ProductController.cs           # Menü ürünleri yönetimi
-│   ├── CategoryController.cs          # Kategori yönetimi
-│   └── ReviewController.cs            # Yorum moderasyonu
+│   ├── AdminLayoutController.cs            # Yönetim paneli layout bileşenleri
+│   ├── CategoryController.cs               # Kategori CRUD
+│   ├── DashboardController.cs              # Ana panel
+│   ├── HomeController.cs                   # Genel giriş sayfası
+│   ├── MenuController.cs                   # Ziyaretçiye açık menü
+│   ├── ProductController.cs                # Ürün CRUD
+│   ├── ReservationController.cs            # Rezervasyon yönetimi
+│   ├── ReviewController.cs                 # Yorum moderasyonu
+│   └── StatisticsController.cs             # İstatistik & ısı haritası
 │
-├── 📂 Models/                          # EF Core Entity'leri (Domain)
+├── 📂 Dtos/                                # Özellik bazlı veri taşıma nesneleri
+│   ├── CategoryDtos/
+│   ├── ChartDtos/                          # Grafik ve ısı haritası verileri
+│   ├── ProductDtos/
+│   ├── ReservationDtos/
+│   └── ReviewDtos/
+│
+├── 📂 Entities/                            # Code First varlık sınıfları
 │   ├── Category.cs
 │   ├── Product.cs
-│   ├── Customer.cs
 │   ├── Reservation.cs
-│   ├── Order.cs
-│   ├── OrderItem.cs
-│   ├── Review.cs
-│   └── Enums/
-│       ├── ReservationStatus.cs
-│       └── ReviewStatus.cs
+│   └── Review.cs
 │
-├── 📂 DTOs/                            # Katmanlar arası veri taşıyıcıları
-│   ├── DashboardStatsDto.cs
-│   ├── DailyReservationDto.cs
-│   ├── CategoryProductCountDto.cs
-│   ├── CategoryAveragePriceDto.cs
-│   ├── HeatmapCellDto.cs
-│   └── ReviewListDto.cs
+├── 📂 Mapping/                             # AutoMapper profilleri
+├── 📂 Migrations/                          # EF Core migration geçmişi
+├── 📂 Models/                              # ViewModel / ErrorViewModel
+├── 📂 Properties/
+│   └── launchSettings.json
 │
-├── 📂 Data/
-│   ├── AppDbContext.cs                # DbSet tanımları & Fluent API
-│   └── SeedData.cs                    # Başlangıç verisi
-│
-├── 📂 Repositories/
-│   ├── IRepository.cs                 # Generic repository sözleşmesi
-│   ├── GenericRepository.cs
-│   ├── IReservationRepository.cs
-│   └── ReservationRepository.cs
-│
-├── 📂 Services/
-│   ├── IDashboardService.cs
-│   ├── DashboardService.cs            # İstatistik & analitik hesaplamalar
-│   ├── IReviewService.cs
-│   └── ReviewService.cs
+├── 📂 Services/                            # İş kuralları & analitik sorgular
 │
 ├── 📂 ViewComponents/
-│   ├── StatCardsViewComponent.cs
-│   ├── ReservationTrendChartViewComponent.cs
-│   ├── CategoryDistributionChartViewComponent.cs
-│   ├── CategoryPriceChartViewComponent.cs
-│   ├── HeatmapViewComponent.cs
-│   └── ActivityFeedViewComponent.cs
+│   ├── ChartViewComponents/                # Ortak grafik bileşeni
+│   ├── DashboardViewComponents/            # Panel bileşenleri
+│   ├── MenuViewComponents/                 # Menü sayfası bileşenleri
+│   └── StatisticsViewComponents/           # İstatistik & heatmap bileşenleri
 │
 ├── 📂 Views/
-│   ├── Home/Index.cshtml
+│   ├── AdminLayout/
+│   ├── Category/
+│   ├── Dashboard/
+│   ├── Home/
+│   ├── Menu/
+│   ├── Product/
+│   ├── Reservation/
+│   ├── Review/
+│   ├── Statistics/
 │   ├── Shared/
-│   │   ├── _Layout.cshtml
-│   │   └── Components/                # ViewComponent görünümleri
-│   └── ...
+│   │   └── Components/                     # Her ViewComponent'in Default.cshtml'i
+│   │       ├── _ChartComponentPartial/
+│   │       ├── _DashboardStatisticsCardsComponentPartial/
+│   │       ├── _DashboardLineChartComponentPartial/
+│   │       ├── _StatisticsHeatmapComponentPartial/
+│   │       └── ...
+│   ├── _ViewImports.cshtml
+│   └── _ViewStart.cshtml
 │
 ├── 📂 wwwroot/
-│   ├── css/site.css
-│   ├── js/dashboard.js                # Chart.js konfigürasyonları
+│   ├── css/
+│   ├── js/
 │   ├── lib/
 │   └── images/screenshots/
 │
-├── 📂 Migrations/
 ├── appsettings.json
 ├── Program.cs
 └── README.md
@@ -311,104 +333,52 @@ LezzetBahcesi/
 
 ## 🗄️ Veritabanı Tasarımı & ER Diyagramı
 
-### Varlık-İlişki (ER) Diyagramı
+Veri modeli bilinçli olarak sade tutulmuştur: dört varlık, iki ilişki. Müşteri bilgisi ayrı bir tabloda tutulmaz — rezervasyon ve yorum kayıtları iletişim/isim alanlarını kendi içlerinde taşır.
+
+> ⚠️ Aşağıdaki alan adları `Entities/` klasöründeki sınıflara göre kurgulanmıştır. Kendi property adlarınla birebir eşleşmiyorsa (`Name` / `CustomerName`, `Status` / `IsActive` gibi) bu bloğu güncelle.
 
 ```mermaid
 erDiagram
-    CATEGORY ||--o{ PRODUCT : "içerir"
-    PRODUCT ||--o{ REVIEW : "değerlendirilir"
-    PRODUCT ||--o{ ORDER_ITEM : "sipariş edilir"
-    CUSTOMER ||--o{ RESERVATION : "oluşturur"
-    CUSTOMER ||--o{ ORDER : "verir"
-    CUSTOMER ||--o{ REVIEW : "yazar"
-    ORDER ||--|{ ORDER_ITEM : "kalemlerinden oluşur"
-    RESTAURANT_TABLE ||--o{ RESERVATION : "atanır"
-    APP_USER ||--o{ REVIEW : "onaylar"
+    CATEGORY ||--o{ PRODUCT : icerir
+    PRODUCT ||--o{ REVIEW : alir
 
     CATEGORY {
-        int Id PK
-        string Name
-        string Description
+        int CategoryId PK
+        string CategoryName
         string ImageUrl
-        bool IsActive
-        DateTime CreatedAt
+        bool Status
     }
 
     PRODUCT {
-        int Id PK
+        int ProductId PK
         int CategoryId FK
-        string Name
+        string ProductName
         string Description
         decimal Price
         string ImageUrl
-        bool IsAvailable
-        DateTime CreatedAt
-    }
-
-    CUSTOMER {
-        int Id PK
-        string FullName
-        string Email
-        string PhoneNumber
-        DateTime CreatedAt
-    }
-
-    RESTAURANT_TABLE {
-        int Id PK
-        int TableNumber
-        int Capacity
-        string Location
-        bool IsActive
-    }
-
-    RESERVATION {
-        int Id PK
-        int CustomerId FK
-        int TableId FK
-        DateTime ReservationDate
-        TimeSpan ReservationTime
-        int GuestCount
-        int Status
-        string Note
-        DateTime CreatedAt
-    }
-
-    ORDER {
-        int Id PK
-        int CustomerId FK
-        DateTime OrderDate
-        decimal TotalAmount
-        int Status
-    }
-
-    ORDER_ITEM {
-        int Id PK
-        int OrderId FK
-        int ProductId FK
-        int Quantity
-        decimal UnitPrice
-        decimal LineTotal
+        bool Status
     }
 
     REVIEW {
-        int Id PK
+        int ReviewId PK
         int ProductId FK
-        int CustomerId FK
-        int ApprovedByUserId FK
-        int Rating
+        string Name
         string Comment
-        int Status
-        DateTime CreatedAt
-        DateTime ApprovedAt
+        int Rating
+        DateTime ReviewDate
+        bool Status
     }
 
-    APP_USER {
-        int Id PK
-        string UserName
-        string Email
-        string PasswordHash
-        string Role
-        bool IsActive
+    RESERVATION {
+        int ReservationId PK
+        string Name
+        string Mail
+        string Phone
+        int PersonCount
+        DateTime ReservationDate
+        string ReservationTime
+        string Description
+        string Status
     }
 ```
 
@@ -416,380 +386,324 @@ erDiagram
 
 | Tablo | Amaç | Kritik Alanlar |
 |---|---|---|
-| `Categories` | Menü kategorileri | `IsActive` — pasif kategoriler analitiklere dahil edilmez |
-| `Products` | Menü ürünleri | `Price` (decimal), `CategoryId` (FK) |
-| `Customers` | Müşteri kayıtları | `Email` benzersiz indeksli |
-| `RestaurantTables` | Fiziksel masa envanteri | `Capacity` — kişi sayısı doğrulaması için |
-| `Reservations` | Rezervasyon kayıtları | `Status` (enum), `ReservationDate` + `ReservationTime` → ısı haritası kaynağı |
-| `Orders` / `OrderItems` | Sipariş başlığı ve kalemleri | `UnitPrice` sipariş anındaki fiyatı dondurur |
-| `Reviews` | Ürün değerlendirmeleri | `Rating` (1–5 kısıtlı), `Status` (moderasyon) |
-| `AppUsers` | Panel kullanıcıları | `Role` — Admin / Manager yetkilendirmesi |
+| `Categories` | Menü kategorileri | `Status` — pasif kategoriler analitiklere dahil edilmez |
+| `Products` | Menü ürünleri | `Price` (decimal), `CategoryId` (FK), `Status` |
+| `Reviews` | Ürün değerlendirmeleri | `Rating` (1–5), `Status` — onay mekanizmasının anahtarı |
+| `Reservations` | Rezervasyon kayıtları | `ReservationDate` + `ReservationTime` → ısı haritasının veri kaynağı |
 
-### İlişki Kardinaliteleri
+### İlişkiler
 
 ```
-Category  1 ────< N  Product        (Bir kategoride çok ürün)
-Product   1 ────< N  Review         (Bir ürüne çok yorum)
-Customer  1 ────< N  Reservation    (Bir müşteri çok rezervasyon)
-Customer  1 ────< N  Review         (Bir müşteri çok yorum)
-Order     1 ────< N  OrderItem      (Bir sipariş çok kalem)
-Product   1 ────< N  OrderItem      (Bir ürün çok siparişte)
-Table     1 ────< N  Reservation    (Bir masa farklı zamanlarda çok rezervasyon)
+Category  1 ────< N  Product     (Bir kategoride çok ürün)
+Product   1 ────< N  Review      (Bir ürüne çok yorum)
+Reservation                      (Bağımsız tablo, yabancı anahtar taşımaz)
 ```
 
 ---
 
 ## 📐 UML Diyagramları
 
-### 1️⃣ Sınıf Diyagramı (Domain + Servis Katmanı)
+### 1️⃣ Sınıf Diyagramı — Entities
 
 ```mermaid
 classDiagram
-    direction LR
-
     class Category {
-        +int Id
-        +string Name
-        +string Description
-        +bool IsActive
+        +int CategoryId
+        +string CategoryName
+        +string ImageUrl
+        +bool Status
         +ICollection~Product~ Products
     }
 
     class Product {
-        +int Id
-        +string Name
+        +int ProductId
+        +string ProductName
+        +string Description
         +decimal Price
-        +bool IsAvailable
+        +string ImageUrl
+        +bool Status
         +int CategoryId
         +Category Category
         +ICollection~Review~ Reviews
-        +double GetAverageRating()
-    }
-
-    class Customer {
-        +int Id
-        +string FullName
-        +string Email
-        +string PhoneNumber
-        +ICollection~Reservation~ Reservations
-        +ICollection~Review~ Reviews
-    }
-
-    class Reservation {
-        +int Id
-        +DateTime ReservationDate
-        +TimeSpan ReservationTime
-        +int GuestCount
-        +ReservationStatus Status
-        +int CustomerId
-        +Customer Customer
-        +void Approve()
-        +void Cancel()
     }
 
     class Review {
-        +int Id
-        +int Rating
+        +int ReviewId
+        +string Name
         +string Comment
-        +ReviewStatus Status
-        +DateTime CreatedAt
+        +int Rating
+        +DateTime ReviewDate
+        +bool Status
         +int ProductId
-        +int CustomerId
-        +void Approve()
-        +void Reject()
+        +Product Product
     }
 
-    class Order {
-        +int Id
-        +DateTime OrderDate
-        +decimal TotalAmount
-        +ICollection~OrderItem~ Items
-        +decimal CalculateTotal()
+    class Reservation {
+        +int ReservationId
+        +string Name
+        +string Mail
+        +string Phone
+        +int PersonCount
+        +DateTime ReservationDate
+        +string ReservationTime
+        +string Description
+        +string Status
     }
 
-    class OrderItem {
-        +int Id
-        +int Quantity
-        +decimal UnitPrice
-        +decimal LineTotal
-    }
-
-    class ReservationStatus {
-        <<enumeration>>
-        Pending
-        Approved
-        Cancelled
-        Completed
-        NoShow
-    }
-
-    class ReviewStatus {
-        <<enumeration>>
-        Pending
-        Approved
-        Rejected
-    }
-
-    Category "1" --> "*" Product : içerir
-    Product "1" --> "*" Review : alır
-    Product "1" --> "*" OrderItem
-    Customer "1" --> "*" Reservation
-    Customer "1" --> "*" Review
-    Order "1" *-- "*" OrderItem : kompozisyon
-    Reservation ..> ReservationStatus
-    Review ..> ReviewStatus
+    Category "1" --> "*" Product
+    Product "1" --> "*" Review
 ```
 
-### 2️⃣ Servis & Repository Katmanı (Arayüz Tasarımı)
+### 2️⃣ Servis & Bileşen Katmanı
 
 ```mermaid
 classDiagram
-    direction TB
+    class DinnerMenuContext {
+        +DbSet~Category~ Categories
+        +DbSet~Product~ Products
+        +DbSet~Reservation~ Reservations
+        +DbSet~Review~ Reviews
+        #OnModelCreating(ModelBuilder) void
+    }
 
-    class IRepository~T~ {
+    class IStatisticsService {
         <<interface>>
-        +Task~IEnumerable~T~~ GetAllAsync()
-        +Task~T~ GetByIdAsync(int id)
-        +Task AddAsync(T entity)
-        +void Update(T entity)
-        +void Delete(T entity)
-        +Task~int~ SaveChangesAsync()
+        +GetSummaryAsync() DashboardSummaryDto
+        +GetCategoryTableAsync() List~CategoryStatisticDto~
+        +GetHeatmapAsync() List~HeatmapCellDto~
     }
 
-    class GenericRepository~T~ {
-        -AppDbContext _context
-        -DbSet~T~ _dbSet
-        +GenericRepository(AppDbContext context)
+    class StatisticsService {
+        -DinnerMenuContext _context
+        -IMapper _mapper
     }
 
-    class IDashboardService {
+    class IChartService {
         <<interface>>
-        +Task~DashboardStatsDto~ GetStatsAsync()
-        +Task~List~DailyReservationDto~~ GetWeeklyTrendAsync()
-        +Task~List~CategoryProductCountDto~~ GetCategoryDistributionAsync()
-        +Task~List~CategoryAveragePriceDto~~ GetCategoryAveragePricesAsync()
-        +Task~List~HeatmapCellDto~~ GetHeatmapAsync()
+        +GetDailyReservationsAsync() List~LineChartDto~
+        +GetProductCountByCategoryAsync() List~BarChartDto~
+        +GetAveragePriceByCategoryAsync() List~PieChartDto~
     }
 
-    class DashboardService {
-        -IRepository~Reservation~ _reservationRepo
-        -IRepository~Product~ _productRepo
-        -IRepository~Category~ _categoryRepo
+    class ChartService {
+        -DinnerMenuContext _context
     }
 
     class IReviewService {
         <<interface>>
-        +Task~List~ReviewListDto~~ GetPendingAsync()
-        +Task ApproveAsync(int reviewId)
-        +Task RejectAsync(int reviewId)
-        +Task~double~ GetProductAverageAsync(int productId)
+        +GetPendingAsync() List~ResultReviewDto~
+        +ApproveAsync(int id) Task
+        +RejectAsync(int id) Task
     }
 
     class ReviewService {
-        -IRepository~Review~ _reviewRepo
+        -DinnerMenuContext _context
     }
 
-    class AppDbContext {
-        +DbSet~Category~ Categories
-        +DbSet~Product~ Products
-        +DbSet~Customer~ Customers
-        +DbSet~Reservation~ Reservations
-        +DbSet~Order~ Orders
-        +DbSet~Review~ Reviews
-        #OnModelCreating(ModelBuilder)
+    class GeneralMapping {
+        <<AutoMapper Profile>>
+        +CreateMap() void
     }
 
-    IRepository~T~ <|.. GenericRepository~T~
-    IDashboardService <|.. DashboardService
+    IStatisticsService <|.. StatisticsService
+    IChartService <|.. ChartService
     IReviewService <|.. ReviewService
-    GenericRepository~T~ --> AppDbContext
-    DashboardService --> IRepository~T~
-    ReviewService --> IRepository~T~
+    StatisticsService --> DinnerMenuContext
+    ChartService --> DinnerMenuContext
+    ReviewService --> DinnerMenuContext
+    StatisticsService --> GeneralMapping
 ```
+
+> Servis arayüzlerinin adları `Services/` klasöründeki gerçek dosyalarına göre güncellenmelidir.
 
 ### 3️⃣ Sequence Diyagramı — Dashboard Yüklenmesi
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor U as 👤 Yönetici
-    participant BR as 🌐 Tarayıcı
-    participant HC as 🎮 HomeController
-    participant VC as 🧩 ViewComponent
-    participant SV as ⚙️ DashboardService
-    participant RP as 🗄️ Repository
-    participant DB as 💾 PostgreSQL
-    participant CJ as 📊 Chart.js
+    actor U as Yonetici
+    participant BR as Tarayici
+    participant DC as DashboardController
+    participant VC as ViewComponent
+    participant SV as Service
+    participant CX as DinnerMenuContext
+    participant DB as PostgreSQL
+    participant CJ as Chart.js
 
-    U->>BR: /Home/Index adresine gider
-    BR->>HC: GET /Home/Index
-    HC->>BR: Index.cshtml render başlar
+    U->>BR: /Dashboard/Index adresine gider
+    BR->>DC: GET /Dashboard/Index
+    DC->>BR: Index.cshtml render baslar
 
-    Note over VC,DB: Her ViewComponent kendi verisini bağımsız çeker
+    Note over VC,DB: Her ViewComponent kendi verisini bagimsiz ceker
 
-    BR->>VC: Invoke StatCards
-    VC->>SV: GetStatsAsync()
-    SV->>RP: CountAsync() sorguları
-    RP->>DB: SELECT COUNT(*) ...
-    DB-->>RP: Sonuç kümesi
-    RP-->>SV: Entity verisi
-    SV-->>VC: DashboardStatsDto
-    VC-->>BR: Metrik kartları HTML
+    BR->>VC: Invoke _DashboardStatisticsCardsComponentPartial
+    VC->>SV: GetSummaryAsync()
+    SV->>CX: CountAsync sorgulari
+    CX->>DB: SELECT COUNT(*)
+    DB-->>CX: Sonuc kumesi
+    CX-->>SV: Entity verisi
+    SV-->>VC: DashboardSummaryDto
+    VC-->>BR: Metrik kartlari HTML
 
-    BR->>VC: Invoke ReservationTrendChart
-    VC->>SV: GetWeeklyTrendAsync()
-    SV->>RP: Son 7 gün GroupBy(Date)
-    RP->>DB: SELECT date, COUNT(*) GROUP BY date
-    DB-->>RP: Günlük toplamlar
-    SV-->>VC: List~DailyReservationDto~
-    VC-->>BR: canvas + JSON veri
+    BR->>VC: Invoke _DashboardLineChartComponentPartial
+    VC->>SV: GetDailyReservationsAsync()
+    SV->>CX: Son 7 gun GroupBy Date
+    CX->>DB: SELECT date, COUNT(*) GROUP BY date
+    DB-->>CX: Gunluk toplamlar
+    SV-->>VC: LineChartDto listesi
+    VC-->>BR: canvas ve JSON veri
 
-    BR->>VC: Invoke Heatmap
-    VC->>SV: GetHeatmapAsync()
-    SV->>RP: GroupBy(DayOfWeek, Hour)
-    RP->>DB: Zaman bazlı toplama sorgusu
-    DB-->>RP: Yoğunluk matrisi
-    SV-->>VC: List~HeatmapCellDto~ (null-safe normalize)
-    VC-->>BR: Matris tablosu
+    BR->>VC: Invoke _DashboardPieChartComponentPartial
+    VC->>SV: GetAveragePriceByCategoryAsync()
+    SV->>CX: GroupBy CategoryId, Average Price
+    CX->>DB: SELECT category, AVG(price) GROUP BY category
+    DB-->>CX: Ortalama fiyatlar
+    SV-->>VC: PieChartDto listesi
+    VC-->>BR: canvas ve JSON veri
 
-    BR->>CJ: Grafikleri çiz
-    CJ-->>U: 📊 Tamamlanmış Dashboard
+    BR->>CJ: Grafikleri ciz
+    CJ-->>U: Tamamlanmis Dashboard
 ```
 
-### 4️⃣ Sequence Diyagramı — Yorum Moderasyon Akışı
+### 4️⃣ Sequence Diyagramı — Isı Haritası Üretimi
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor C as 👥 Müşteri
-    actor A as 🛡️ Admin
-    participant RC as 🎮 ReviewController
-    participant RS as ⚙️ ReviewService
-    participant DB as 💾 PostgreSQL
-    participant PV as 🌐 Ürün Sayfası
+    actor U as Yonetici
+    participant SC as StatisticsController
+    participant HC as HeatmapViewComponent
+    participant SV as StatisticsService
+    participant CX as DinnerMenuContext
+    participant DB as PostgreSQL
 
-    C->>RC: POST /Review/Create (Rating + Comment)
+    U->>SC: GET /Statistics/Index
+    SC->>HC: Invoke _StatisticsHeatmapComponentPartial
+    HC->>SV: GetHeatmapAsync()
+    SV->>CX: Reservations GroupBy Gun, Saat
+    CX->>DB: Zaman bazli toplama sorgusu
+    DB-->>CX: Dolu hucrelerin sayilari
+    CX-->>SV: Ham sonuc kumesi
+
+    Note over SV: Rezervasyonu olmayan gun ve saat kombinasyonlari 0 ile doldurulur
+
+    SV-->>HC: 7 x N boyutunda HeatmapCellDto matrisi
+    HC-->>U: Renk yogunluklu matris tablosu
+```
+
+### 5️⃣ Sequence Diyagramı — Yorum Moderasyonu
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Ziyaretci
+    actor A as Yonetici
+    participant RC as ReviewController
+    participant RS as ReviewService
+    participant DB as PostgreSQL
+    participant MN as Menu Sayfasi
+
+    C->>RC: POST /Review/Create
     RC->>RS: CreateAsync(dto)
-    RS->>DB: INSERT Review (Status = Pending)
-    DB-->>RS: Kayıt oluştu
-    RS-->>C: "Yorumunuz onay bekliyor" mesajı
+    RS->>DB: INSERT Review, Status = false
+    DB-->>RS: Kayit olustu
+    RS-->>C: Yorumunuz onay bekliyor
 
-    Note over PV: Pending yorum müşteri tarafında görünmez
+    Note over MN: Onaysiz yorum menude gorunmez
 
-    A->>RC: GET /Review/Pending
+    A->>RC: GET /Review/Index
     RC->>RS: GetPendingAsync()
-    RS->>DB: SELECT WHERE Status = Pending
+    RS->>DB: SELECT WHERE Status = false
     DB-->>RS: Bekleyen yorum listesi
     RS-->>A: Moderasyon tablosu
 
-    alt Onaylandı
-        A->>RC: POST /Review/Approve/{id}
+    alt Onaylandi
+        A->>RC: POST /Review/Approve
         RC->>RS: ApproveAsync(id)
-        RS->>DB: UPDATE Status = Approved, ApprovedAt = now()
-        DB-->>PV: Yorum yayına alınır
-        PV-->>C: ⭐ Yorum ve ortalama puan güncellenir
+        RS->>DB: UPDATE Status = true
+        DB-->>MN: Yorum yayina alinir
+        MN-->>C: Yorum ve ortalama puan guncellenir
     else Reddedildi
-        A->>RC: POST /Review/Reject/{id}
+        A->>RC: POST /Review/Reject
         RC->>RS: RejectAsync(id)
-        RS->>DB: UPDATE Status = Rejected
-        Note over PV: Yorum hiçbir zaman yayınlanmaz
+        RS->>DB: UPDATE veya DELETE
+        Note over MN: Yorum hicbir zaman yayinlanmaz
     end
 ```
 
-### 5️⃣ Durum Diyagramı — Rezervasyon Yaşam Döngüsü
+### 6️⃣ Durum Diyagramı — Rezervasyon Yaşam Döngüsü
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending : Müşteri rezervasyon oluşturur
+    [*] --> Bekliyor : Rezervasyon talebi olusturulur
 
-    Pending --> Approved : Admin onaylar
-    Pending --> Cancelled : Müşteri/Admin iptal eder
+    Bekliyor --> Onaylandi : Yonetici onaylar
+    Bekliyor --> Iptal : Talep reddedilir
 
-    Approved --> Completed : Müşteri geldi, hizmet tamamlandı
-    Approved --> NoShow : Müşteri gelmedi
-    Approved --> Cancelled : Son dakika iptali
+    Onaylandi --> Tamamlandi : Misafir geldi, hizmet verildi
+    Onaylandi --> Iptal : Son dakika iptali
 
-    Completed --> [*]
-    Cancelled --> [*]
-    NoShow --> [*]
+    Tamamlandi --> [*]
+    Iptal --> [*]
 
-    note right of Pending
-        Varsayılan durum.
-        Dashboard'da "Bekleyen"
-        sayacına dahildir.
+    note right of Bekliyor
+        Varsayilan durum.
+        Dashboard'da Bekleyen sayacina dahildir.
     end note
 
-    note right of Approved
-        Isı haritası
-        yoğunluk hesabına
-        dahil edilir.
+    note right of Onaylandi
+        Isi haritasi yogunluk
+        hesabina dahil edilir.
     end note
 ```
 
-### 6️⃣ Use Case Diyagramı
+### 7️⃣ Use Case Diyagramı
 
 ```mermaid
 flowchart LR
-    subgraph Actors[" "]
-        direction TB
-        A1(("👤<br/>Müşteri"))
-        A2(("🛡️<br/>Admin"))
-        A3(("👔<br/>Müdür"))
+    subgraph AK["Aktorler"]
+        A1["Ziyaretci"]
+        A2["Yonetici"]
     end
 
-    subgraph System["🍽️ Lezzet Bahçesi Sistemi"]
-        direction TB
-        UC1["Rezervasyon Oluştur"]
-        UC2["Menüyü Görüntüle"]
-        UC3["Ürün Yorumu Yap"]
-        UC4["Rezervasyonları Yönet"]
-        UC5["Yorumları Onayla/Reddet"]
-        UC6["Menü & Kategori Yönet"]
-        UC7["Dashboard İstatistiklerini Görüntüle"]
-        UC8["Isı Haritası Analizi Yap"]
-        UC9["Kullanıcı Yetkilerini Yönet"]
+    subgraph SYS["Lezzet Bahcesi Sistemi"]
+        UC1["Menuyu Goruntule"]
+        UC2["Urun Yorumu Yap"]
+        UC3["Rezervasyon Talebi Olustur"]
+        UC4["Dashboard Metriklerini Izle"]
+        UC5["Grafik Analizlerini Incele"]
+        UC6["Isi Haritasi Analizi Yap"]
+        UC7["Rezervasyonlari Yonet"]
+        UC8["Yorumlari Onayla veya Reddet"]
+        UC9["Kategori ve Urun Yonet"]
     end
 
     A1 --> UC1
     A1 --> UC2
     A1 --> UC3
-
     A2 --> UC4
     A2 --> UC5
     A2 --> UC6
     A2 --> UC7
+    A2 --> UC8
     A2 --> UC9
-
-    A3 --> UC7
-    A3 --> UC8
-    A3 --> UC4
-
-    style System fill:#fff8e1,stroke:#f9a825,stroke-width:2px
-    style Actors fill:#e8eaf6,stroke:#3949ab
 ```
 
 ---
 
-## 🔄 İstek Yaşam Döngüsü (Request Lifecycle)
+## 🔄 İstek Yaşam Döngüsü
 
-```mermaid
-flowchart LR
-    A["🌐 HTTP İsteği"] --> B["🔀 Routing<br/>Middleware"]
-    B --> C["🎮 Controller<br/>Action"]
-    C --> D["⚙️ Service<br/>İş Kuralları"]
-    D --> E["🗄️ Repository<br/>Sorgu Katmanı"]
-    E --> F["🔧 EF Core<br/>LINQ → SQL"]
-    F --> G[("💾 PostgreSQL")]
-    G --> H["📦 Entity"]
-    H --> I["🔄 DTO<br/>Projeksiyon"]
-    I --> J["🎨 Razor View<br/>+ ViewComponent"]
-    J --> K["📄 HTML Yanıtı"]
-    K --> L["📊 Chart.js<br/>İstemci Render"]
-
-    style A fill:#e3f2fd
-    style G fill:#fce4ec
-    style L fill:#e8f5e9
-```
+| # | Aşama | Sorumlu | Ne olur? |
+|---|---|---|---|
+| 1 | HTTP İsteği | Kestrel / Middleware | İstek karşılanır, routing çalışır |
+| 2 | Controller Action | `DashboardController` | İsteği karşılar, View döndürür |
+| 3 | ViewComponent | `DashboardViewComponents` | Sayfa parçası kendi verisini talep eder |
+| 4 | Service | `Services/` | İş kuralı ve analitik hesaplama yapılır |
+| 5 | DbContext | `DinnerMenuContext` | LINQ ifadesi SQL'e çevrilir |
+| 6 | PostgreSQL | Veritabanı | Sorgu çalışır, satırlar döner |
+| 7 | Entity → DTO | `Mapping/` (AutoMapper) | Sadece gerekli alanlar taşınır |
+| 8 | Razor View | `Views/Shared/Components/` | Bileşenin HTML çıktısı üretilir |
+| 9 | Chart.js | Tarayıcı | JSON veriden grafik çizilir |
 
 ---
 
@@ -810,8 +724,8 @@ flowchart LR
 **1. Depoyu klonlayın**
 
 ```bash
-git clone https://github.com/yelda-batti0/LezzetBahcesi.git
-cd LezzetBahcesi
+git clone https://github.com/yelda-batti0/REPO_ADI.git
+cd REPO_ADI
 ```
 
 **2. Bağımlılıkları yükleyin**
@@ -822,82 +736,67 @@ dotnet restore
 
 **3. PostgreSQL veritabanını oluşturun**
 
-pgAdmin üzerinden veya terminalden:
-
 ```sql
 CREATE DATABASE "DinnerMenuDb"
     WITH ENCODING = 'UTF8'
-    LC_COLLATE = 'tr_TR.UTF-8'
-    LC_CTYPE = 'tr_TR.UTF-8'
     TEMPLATE = template0;
 ```
 
 **4. Bağlantı dizesini yapılandırın**
 
-`appsettings.json` dosyasını düzenleyin:
+`appsettings.json`:
 
 ```json
 {
   "ConnectionStrings": {
     "DefaultConnection": "Host=localhost;Port=5432;Database=DinnerMenuDb;Username=postgres;Password=SIFRENIZ;Client Encoding=UTF8;"
   },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
-    }
-  },
   "AllowedHosts": "*"
 }
 ```
 
-> 🔐 **Güvenlik notu:** Şifrenizi repoya göndermeyin. Geliştirme ortamında User Secrets kullanın:
+> 🔐 Şifrenizi repoya göndermeyin. Geliştirme ortamında User Secrets kullanın:
 > ```bash
 > dotnet user-secrets init
 > dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;..."
 > ```
+>
+> Bağlantı bilgisi `Context/DinnerMenuContext.cs` içinde `OnConfiguring` ile tanımlıysa, düzenlemeyi orada yapmanız gerekir.
 
 **5. Migration'ları uygulayın**
 
 ```bash
-# Yeni bir migration eklemek isterseniz:
 dotnet ef migrations add InitialCreate
-
-# Veritabanına uygulayın:
 dotnet ef database update
 ```
 
-Visual Studio kullanıyorsanız **Package Manager Console** üzerinden:
+Visual Studio **Package Manager Console** üzerinden:
 
 ```powershell
 Add-Migration InitialCreate
 Update-Database
 ```
 
-**6. Uygulamayı başlatın**
+**6. Uygulamayı çalıştırın**
 
 ```bash
 dotnet run
-```
-
-veya sıcak yeniden yükleme (hot reload) ile:
-
-```bash
+# veya sıcak yeniden yükleme ile
 dotnet watch run
 ```
 
 **7. Tarayıcıda açın**
 
 ```
-https://localhost:7044
-http://localhost:5044
+https://localhost:7044     → Ana sayfa
+https://localhost:7044/Dashboard    → Yönetim paneli
+https://localhost:7044/Statistics   → İstatistik & ısı haritası
+https://localhost:7044/Menu         → Menü sayfası
 ```
 
 > Portlar `Properties/launchSettings.json` dosyasında tanımlıdır.
 
 ### 🐳 Docker ile PostgreSQL (Opsiyonel)
-
-Yerel kuruluma alternatif olarak veritabanını konteynerde çalıştırabilirsiniz:
 
 ```yaml
 # docker-compose.yml
@@ -930,18 +829,20 @@ docker compose up -d
 |---|---|---|
 | `ConnectionStrings:DefaultConnection` | `appsettings.json` | PostgreSQL bağlantı bilgileri |
 | `applicationUrl` | `Properties/launchSettings.json` | Uygulamanın çalışacağı port |
-| Servis kayıtları | `Program.cs` | DI konteynerine servis/repository ekleme |
-| Fluent API kısıtları | `Data/AppDbContext.cs` | İlişkiler, indeksler, `decimal` precision |
-| Seed verisi | `Data/SeedData.cs` | Örnek kategori, ürün ve rezervasyon kayıtları |
+| Servis kayıtları | `Program.cs` | DI konteynerine servis ekleme |
+| Fluent API kısıtları | `Context/DinnerMenuContext.cs` | İlişkiler, indeksler, `decimal` precision |
+| Dönüşüm profilleri | `Mapping/` | Entity ↔ DTO eşleştirmeleri |
 
 **`Program.cs` — tipik servis kaydı:**
 
 ```csharp
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<DinnerMenuContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IChartService, ChartService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 
 builder.Services.AddControllersWithViews();
@@ -953,20 +854,24 @@ builder.Services.AddControllersWithViews();
 
 | HTTP | Rota | Controller / Action | Açıklama |
 |---|---|---|---|
-| `GET` | `/` veya `/Home/Index` | `HomeController.Index` | Ana dashboard |
-| `GET` | `/Reservation` | `ReservationController.Index` | Rezervasyon listesi |
-| `GET` | `/Reservation/Create` | `ReservationController.Create` | Yeni rezervasyon formu |
-| `POST` | `/Reservation/Create` | `ReservationController.Create` | Rezervasyon kaydı |
-| `POST` | `/Reservation/Approve/{id}` | `ReservationController.Approve` | Durumu `Approved` yapar |
-| `POST` | `/Reservation/Cancel/{id}` | `ReservationController.Cancel` | Durumu `Cancelled` yapar |
+| `GET` | `/` | `HomeController.Index` | Genel giriş sayfası |
+| `GET` | `/Menu` | `MenuController.Index` | Ziyaretçiye açık menü |
+| `GET` | `/Dashboard` | `DashboardController.Index` | Yönetim paneli ana ekranı |
+| `GET` | `/Statistics` | `StatisticsController.Index` | İstatistikler ve ısı haritası |
 | `GET` | `/Category` | `CategoryController.Index` | Kategori listesi |
-| `GET` | `/Product` | `ProductController.Index` | Menü ürünleri |
-| `GET` | `/Product/Details/{id}` | `ProductController.Details` | Ürün + onaylı yorumlar |
-| `GET` | `/Review/Pending` | `ReviewController.Pending` | Onay bekleyen yorumlar |
+| `GET` `POST` | `/Category/Create` | `CategoryController.Create` | Yeni kategori |
+| `GET` `POST` | `/Category/Update/{id}` | `CategoryController.Update` | Kategori güncelleme |
+| `GET` | `/Category/Delete/{id}` | `CategoryController.Delete` | Kategori silme |
+| `GET` | `/Product` | `ProductController.Index` | Ürün listesi |
+| `GET` `POST` | `/Product/Create` | `ProductController.Create` | Yeni ürün |
+| `GET` | `/Reservation` | `ReservationController.Index` | Rezervasyon listesi |
+| `POST` | `/Reservation/Approve/{id}` | `ReservationController.Approve` | Rezervasyonu onaylar |
+| `POST` | `/Reservation/Cancel/{id}` | `ReservationController.Cancel` | Rezervasyonu iptal eder |
+| `GET` | `/Review` | `ReviewController.Index` | Yorum moderasyon listesi |
 | `POST` | `/Review/Approve/{id}` | `ReviewController.Approve` | Yorumu yayına alır |
 | `POST` | `/Review/Reject/{id}` | `ReviewController.Reject` | Yorumu reddeder |
 
-> Rota adları projenizdeki gerçek controller/action isimlerine göre güncellenmelidir.
+> Action adları projedeki gerçek imzalarla eşleştirilmelidir.
 
 ---
 
@@ -985,15 +890,15 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 veya entity'lerde UTC kullanın:
 
 ```csharp
-public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+public DateTime ReviewDate { get; set; } = DateTime.UtcNow;
 ```
 
 </details>
 
 <details>
-<summary><b>❗ Türkçe karakterler bozuk görünüyor (ÅŸ, Ä±, Ã§)</b></summary>
+<summary><b>❗ Türkçe karakterler bozuk görünüyor</b></summary>
 
-Bağlantı dizesine `Client Encoding=UTF8;` eklendiğinden ve veritabanının `UTF8` encoding ile oluşturulduğundan emin olun. Ayrıca `_Layout.cshtml` içinde:
+Bağlantı dizesinde `Client Encoding=UTF8;` bulunduğundan ve veritabanının UTF8 ile oluşturulduğundan emin olun. Ayrıca layout dosyasında:
 
 ```html
 <meta charset="utf-8" />
@@ -1002,22 +907,25 @@ Bağlantı dizesine `Client Encoding=UTF8;` eklendiğinden ve veritabanının `U
 </details>
 
 <details>
-<summary><b>❗ "dotnet ef" komutu bulunamıyor</b></summary>
+<summary><b>❗ ViewComponent bulunamıyor / render edilmiyor</b></summary>
 
-```bash
-dotnet tool install --global dotnet-ef
-dotnet tool update --global dotnet-ef
+Bileşenin görünüm dosyası şu yolda ve tam olarak `Default.cshtml` adıyla bulunmalıdır:
+
 ```
+Views/Shared/Components/{BilesenAdi}/Default.cshtml
+```
+
+Sınıf adı `XComponentPartialViewComponent` ise çağrı `@await Component.InvokeAsync("XComponentPartial")` biçimindedir; klasör adı da `_` öneki dahil birebir eşleşmelidir.
 
 </details>
 
 <details>
-<summary><b>❗ Grafikler boş görünüyor / Chart.js veri almıyor</b></summary>
+<summary><b>❗ Grafikler boş görünüyor</b></summary>
 
 Tarayıcı konsolunu açın (F12). Sık nedenler:
-- Chart.js CDN yüklenmemiş → `_Layout.cshtml` script sırasını kontrol edin.
-- ViewComponent'ten gelen JSON `@Html.Raw(Json.Serialize(Model))` ile serialize edilmemiş.
-- Boş veri seti → `DefaultIfEmpty()` ile null-safe projeksiyon uygulayın.
+- Chart.js CDN yüklenmemiş → `_DashboardScriptsComponentPartial` içindeki script sırasını kontrol edin.
+- Veri `@Html.Raw(Json.Serialize(Model))` ile serialize edilmemiş.
+- Boş veri seti → null-safe projeksiyon uygulanmamış.
 
 </details>
 
@@ -1030,10 +938,21 @@ Rezervasyon bulunmayan gün/saat kombinasyonları için varsayılan `0` üretilm
 var matrix = Enumerable.Range(0, 7)
     .SelectMany(day => hours.Select(hour => new HeatmapCellDto
     {
-        DayOfWeek = day,
-        Hour = hour,
-        Count = data.FirstOrDefault(x => x.DayOfWeek == day && x.Hour == hour)?.Count ?? 0
+        Day   = day,
+        Hour  = hour,
+        Count = data.FirstOrDefault(x => x.Day == day && x.Hour == hour)?.Count ?? 0
     })).ToList();
+```
+
+</details>
+
+<details>
+<summary><b>❗ AutoMapper "Unmapped members were found" hatası</b></summary>
+
+`Mapping/` klasöründeki profil dosyasında ilgili eşleştirmenin tanımlı olduğundan emin olun:
+
+```csharp
+CreateMap<Product, ResultProductDto>().ReverseMap();
 ```
 
 </details>
@@ -1042,26 +961,24 @@ var matrix = Enumerable.Range(0, 7)
 
 ## 🗓️ Yol Haritası
 
-- [x] Dashboard metrik kartları
-- [x] Chart.js grafik entegrasyonu (Line / Bar / Doughnut)
+- [x] Dashboard metrik kartları ve hızlı işlem kısayolları
+- [x] Chart.js entegrasyonu (Line / Bar / Pie)
 - [x] Rezervasyon ısı haritası
-- [x] Yorum moderasyon sistemi
+- [x] Yorum onay ve moderasyon sistemi
 - [x] Kategori & ürün yönetimi
+- [x] ViewComponent tabanlı sayfa kompozisyonu
 - [ ] ASP.NET Core Identity ile rol bazlı kimlik doğrulama
-- [ ] SignalR ile gerçek zamanlı bildirimler
+- [ ] `Customer` ve `Order` varlıklarının eklenmesi (sipariş takibi)
+- [ ] SignalR ile gerçek zamanlı rezervasyon bildirimleri
 - [ ] Excel / PDF rapor dışa aktarımı
-- [ ] Çok dilli arayüz (i18n / Localization)
 - [ ] REST API katmanı + Swagger dokümantasyonu
 - [ ] Birim testleri (xUnit + Moq)
-- [ ] Docker ile tam konteynerleştirme
+- [ ] Çok dilli arayüz (Localization)
 - [ ] Redis ile dashboard sorgu önbellekleme
-- [ ] Mobil uyumlu QR menü modülü
 
 ---
 
 ## 🤝 Katkıda Bulunma
-
-Katkılar memnuniyetle karşılanır!
 
 1. Depoyu **fork** edin
 2. Yeni bir dal oluşturun: `git checkout -b feature/harika-ozellik`
@@ -1069,8 +986,7 @@ Katkılar memnuniyetle karşılanır!
 4. Dalınızı push edin: `git push origin feature/harika-ozellik`
 5. Bir **Pull Request** açın
 
-**Commit mesaj biçimi:** [Conventional Commits](https://www.conventionalcommits.org/)
-`feat:` · `fix:` · `docs:` · `style:` · `refactor:` · `test:` · `chore:`
+**Commit biçimi:** [Conventional Commits](https://www.conventionalcommits.org/) — `feat:` · `fix:` · `docs:` · `refactor:` · `test:` · `chore:`
 
 ---
 
