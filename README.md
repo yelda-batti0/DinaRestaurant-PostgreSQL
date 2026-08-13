@@ -121,7 +121,7 @@ Uygulama **ASP.NET Core MVC** üzerine kurulu, veri katmanında **PostgreSQL + E
 
 ## 📸 Ekran Görüntüleri
 
-> Görselleri `wwwroot/images/screenshots/` klasörüne ekleyip aşağıdaki yolları güncelleyin.
+
 
 <div align="center">
 
@@ -514,7 +514,6 @@ classDiagram
     StatisticsService --> GeneralMapping
 ```
 
-> Servis arayüzlerinin adları `Services/` klasöründeki gerçek dosyalarına göre güncellenmelidir.
 
 ### 3️⃣ Sequence Diyagramı — Dashboard Yüklenmesi
 
@@ -724,8 +723,8 @@ flowchart LR
 **1. Depoyu klonlayın**
 
 ```bash
-git clone https://github.com/yelda-batti0/REPO_ADI.git
-cd REPO_ADI
+git clone https://github.com/yelda-batti0/DinaRestaurant-PostgreSQL.git
+cd DinaRestaurant-PostgreSQL
 ```
 
 **2. Bağımlılıkları yükleyin**
