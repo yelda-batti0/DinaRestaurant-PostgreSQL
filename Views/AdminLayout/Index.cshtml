@@ -1,0 +1,993 @@
+﻿﻿
+    @{
+        Layout = null;
+    }
+
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@ViewData["Title"] - Lezzet Bahçesi Yönetim Paneli</title>
+
+        <!-- Bootstrap 5 CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+
+        <style>
+                /* ========================================
+                           CSS VARIABLES & BASE
+                        ======================================== */
+                :root {
+                    --sidebar-width: 265px;
+                    --sidebar-collapsed-width: 72px;
+                    --navbar-height: 64px;
+                    /* Sidebar palette — deep charcoal with warm amber accent */
+                    --sidebar-bg: #1a1a1a;
+                    --sidebar-surface: #242424;
+                    --sidebar-border: rgba(255,255,255,0.06);
+                    --sidebar-text: #b0b0b0;
+                    --sidebar-text-hover: #ffffff;
+                    --sidebar-active-bg: rgba(230, 160, 60, 0.15);
+                    --sidebar-active-text: #e6a03c;
+                    --sidebar-active-border: #e6a03c;
+                    --sidebar-icon: #707070;
+                    /* Accent */
+                    --accent: #e6a03c;
+                    --accent-soft: rgba(230, 160, 60, 0.12);
+                    --accent-dark: #c8861e;
+                    /* Content area */
+                    --content-bg: #f5f4f1;
+                    --card-bg: #ffffff;
+                    --navbar-bg: #ffffff;
+                    --navbar-border: #ebebeb;
+                    --text-primary: #1a1a1a;
+                    --text-secondary: #6b6b6b;
+                    --radius: 14px;
+                    --radius-sm: 8px;
+                    --shadow: 0 2px 20px rgba(0,0,0,0.07);
+                    --shadow-md: 0 4px 32px rgba(0,0,0,0.10);
+                    --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                *, *::before, *::after {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    font-family: 'DM Sans', sans-serif;
+                    background: var(--content-bg);
+                    color: var(--text-primary);
+                    overflow-x: hidden;
+                }
+
+                /* ========================================
+                           SIDEBAR
+                        ======================================== */
+                #sidebar {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    height: 100vh;
+                    width: var(--sidebar-width);
+                    background: var(--sidebar-bg);
+                    z-index: 1040;
+                    display: flex;
+                    flex-direction: column;
+                    transition: var(--transition);
+                    border-right: 1px solid var(--sidebar-border);
+                    overflow: hidden;
+                }
+
+                /* --- Brand / Logo --- */
+                .sidebar-brand {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 20px 22px 18px;
+                    border-bottom: 1px solid var(--sidebar-border);
+                    text-decoration: none;
+                    flex-shrink: 0;
+                }
+
+                .brand-logo {
+                    width: 40px;
+                    height: 40px;
+                    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    font-size: 18px;
+                    color: #fff;
+                    box-shadow: 0 4px 12px rgba(230,160,60,0.35);
+                }
+
+                .brand-text {
+                    overflow: hidden;
+                    transition: var(--transition);
+                }
+
+                .brand-name {
+                    font-family: 'Playfair Display', serif;
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #ffffff;
+                    line-height: 1.2;
+                    white-space: nowrap;
+                }
+
+                .brand-sub {
+                    font-size: 10.5px;
+                    font-weight: 500;
+                    color: var(--accent);
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    white-space: nowrap;
+                }
+
+                /* --- Nav --- */
+                .sidebar-nav {
+                    flex: 1;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    padding: 14px 12px;
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255,255,255,0.08) transparent;
+                }
+
+                    .sidebar-nav::-webkit-scrollbar {
+                        width: 4px;
+                    }
+
+                    .sidebar-nav::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+
+                    .sidebar-nav::-webkit-scrollbar-thumb {
+                        background: rgba(255,255,255,0.08);
+                        border-radius: 4px;
+                    }
+
+                .nav-section-label {
+                    font-size: 10px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    color: rgba(255,255,255,0.22);
+                    padding: 16px 12px 6px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    transition: var(--transition);
+                }
+
+                .nav-item {
+                    margin-bottom: 2px;
+                }
+
+                .nav-link {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 12px;
+                    border-radius: var(--radius-sm);
+                    color: var(--sidebar-text);
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: var(--transition);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    border-left: 3px solid transparent;
+                    position: relative;
+                }
+
+                    .nav-link .nav-icon {
+                        font-size: 17px;
+                        color: var(--sidebar-icon);
+                        flex-shrink: 0;
+                        width: 20px;
+                        text-align: center;
+                        transition: var(--transition);
+                    }
+
+                    .nav-link .nav-label {
+                        transition: opacity 0.2s ease, width 0.22s ease;
+                        overflow: hidden;
+                    }
+
+                    .nav-link .nav-badge {
+                        margin-left: auto;
+                        font-size: 10px;
+                        font-weight: 700;
+                        background: var(--accent);
+                        color: #fff;
+                        padding: 2px 7px;
+                        border-radius: 20px;
+                        flex-shrink: 0;
+                        transition: var(--transition);
+                    }
+
+                    .nav-link:hover {
+                        background: rgba(255,255,255,0.05);
+                        color: var(--sidebar-text-hover);
+                        border-left-color: rgba(255,255,255,0.15);
+                    }
+
+                        .nav-link:hover .nav-icon {
+                            color: #d0d0d0;
+                        }
+
+                    .nav-link.active {
+                        background: var(--sidebar-active-bg);
+                        color: var(--sidebar-active-text);
+                        border-left-color: var(--sidebar-active-border);
+                    }
+
+                        .nav-link.active .nav-icon {
+                            color: var(--sidebar-active-text);
+                        }
+
+                /* --- Sidebar Footer --- */
+                .sidebar-footer {
+                    padding: 14px 12px;
+                    border-top: 1px solid var(--sidebar-border);
+                    flex-shrink: 0;
+                }
+
+                .sidebar-user {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 10px;
+                    border-radius: var(--radius-sm);
+                    cursor: pointer;
+                    transition: var(--transition);
+                    overflow: hidden;
+                }
+
+                    .sidebar-user:hover {
+                        background: rgba(255,255,255,0.05);
+                    }
+
+                .user-avatar {
+                    width: 34px;
+                    height: 34px;
+                    background: linear-gradient(135deg, var(--accent), #c87941);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    color: #fff;
+                    font-weight: 700;
+                    flex-shrink: 0;
+                }
+
+                .user-info {
+                    overflow: hidden;
+                    transition: var(--transition);
+                }
+
+                .user-name {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #fff;
+                    white-space: nowrap;
+                }
+
+                .user-role {
+                    font-size: 11px;
+                    color: var(--sidebar-text);
+                    white-space: nowrap;
+                }
+
+                /* ========================================
+                           COLLAPSED SIDEBAR (desktop toggle)
+                        ======================================== */
+                body.sidebar-collapsed #sidebar {
+                    width: var(--sidebar-collapsed-width);
+                }
+
+                body.sidebar-collapsed .brand-text,
+                body.sidebar-collapsed .nav-label,
+                body.sidebar-collapsed .nav-badge,
+                body.sidebar-collapsed .nav-section-label,
+                body.sidebar-collapsed .user-info {
+                    opacity: 0;
+                    width: 0;
+                    pointer-events: none;
+                }
+
+                body.sidebar-collapsed #sidebar .nav-link {
+                    justify-content: center;
+                    border-left-color: transparent;
+                    padding: 10px;
+                }
+
+                    body.sidebar-collapsed #sidebar .nav-link.active {
+                        border-left-color: var(--sidebar-active-border);
+                    }
+
+                body.sidebar-collapsed #sidebar .nav-icon {
+                    width: auto;
+                }
+
+                body.sidebar-collapsed #main-wrapper {
+                    margin-left: var(--sidebar-collapsed-width);
+                }
+
+                body.sidebar-collapsed .sidebar-user {
+                    justify-content: center;
+                }
+
+                /* Tooltip on collapsed */
+                body.sidebar-collapsed #sidebar .nav-link {
+                    position: relative;
+                }
+
+                /* ========================================
+                           MAIN WRAPPER
+                        ======================================== */
+                #main-wrapper {
+                    margin-left: var(--sidebar-width);
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    transition: var(--transition);
+                }
+
+                /* ========================================
+                           TOP NAVBAR
+                        ======================================== */
+                #top-navbar {
+                    position: sticky;
+                    top: 0;
+                    z-index: 1030;
+                    height: var(--navbar-height);
+                    background: var(--navbar-bg);
+                    border-bottom: 1px solid var(--navbar-border);
+                    display: flex;
+                    align-items: center;
+                    padding: 0 24px;
+                    gap: 12px;
+                    box-shadow: 0 1px 12px rgba(0,0,0,0.05);
+                }
+
+                /* Toggle button */
+                .sidebar-toggle-btn {
+                    width: 38px;
+                    height: 38px;
+                    border: none;
+                    background: transparent;
+                    border-radius: var(--radius-sm);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 20px;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    transition: var(--transition);
+                    flex-shrink: 0;
+                }
+
+                    .sidebar-toggle-btn:hover {
+                        background: #f0f0f0;
+                        color: var(--text-primary);
+                    }
+
+                /* Breadcrumb / Page title area */
+                .navbar-page-title {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                    display: none;
+                }
+
+                @@media (min-width: 992px) {
+                    .navbar-page-title {
+                        display: block;
+                    }
+                }
+
+                /* Right actions */
+                .navbar-actions {
+                    margin-left: auto;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .nav-action-btn {
+                    width: 38px;
+                    height: 38px;
+                    border: none;
+                    background: transparent;
+                    border-radius: var(--radius-sm);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                    color: var(--text-secondary);
+                    cursor: pointer;
+                    transition: var(--transition);
+                    position: relative;
+                }
+
+                    .nav-action-btn:hover {
+                        background: #f0f0f0;
+                        color: var(--text-primary);
+                    }
+
+                    .nav-action-btn .badge-dot {
+                        position: absolute;
+                        top: 6px;
+                        right: 6px;
+                        width: 8px;
+                        height: 8px;
+                        background: #e74c3c;
+                        border-radius: 50%;
+                        border: 2px solid #fff;
+                    }
+
+                    .nav-action-btn .badge-count {
+                        position: absolute;
+                        top: 4px;
+                        right: 4px;
+                        background: var(--accent);
+                        color: #fff;
+                        font-size: 9px;
+                        font-weight: 700;
+                        line-height: 1;
+                        padding: 2px 4px;
+                        border-radius: 20px;
+                        min-width: 16px;
+                        text-align: center;
+                        border: 2px solid #fff;
+                    }
+
+                .navbar-divider {
+                    width: 1px;
+                    height: 24px;
+                    background: var(--navbar-border);
+                    margin: 0 4px;
+                }
+
+                /* Dropdowns */
+                .navbar-dropdown .dropdown-toggle {
+                    background: none;
+                    border: none;
+                    padding: 0;
+                    cursor: pointer;
+                }
+
+                    .navbar-dropdown .dropdown-toggle::after {
+                        display: none;
+                    }
+
+                .navbar-dropdown .dropdown-menu {
+                    border: 1px solid #ebebeb;
+                    border-radius: var(--radius);
+                    box-shadow: var(--shadow-md);
+                    padding: 8px;
+                    min-width: 200px;
+                    margin-top: 8px !important;
+                }
+
+                .navbar-dropdown .dropdown-item {
+                    border-radius: var(--radius-sm);
+                    font-size: 13.5px;
+                    font-weight: 500;
+                    padding: 9px 12px;
+                    color: var(--text-primary);
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    transition: var(--transition);
+                }
+
+                    .navbar-dropdown .dropdown-item:hover {
+                        background: var(--accent-soft);
+                        color: var(--accent-dark);
+                    }
+
+                    .navbar-dropdown .dropdown-item i {
+                        font-size: 15px;
+                        width: 18px;
+                        text-align: center;
+                        color: var(--text-secondary);
+                    }
+
+                    .navbar-dropdown .dropdown-item:hover i {
+                        color: var(--accent);
+                    }
+
+                .navbar-dropdown .dropdown-divider {
+                    border-color: #f0f0f0;
+                    margin: 6px 0;
+                }
+
+                /* User button in navbar */
+                .user-nav-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    padding: 5px 10px 5px 5px;
+                    border-radius: 30px;
+                    background: #f7f7f5;
+                    border: 1px solid #ebebeb;
+                    cursor: pointer;
+                    transition: var(--transition);
+                }
+
+                    .user-nav-btn:hover {
+                        background: #efefec;
+                    }
+
+                .user-nav-avatar {
+                    width: 30px;
+                    height: 30px;
+                    background: linear-gradient(135deg, var(--accent), #c87941);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #fff;
+                }
+
+                .user-nav-name {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                }
+
+                .user-nav-chevron {
+                    font-size: 11px;
+                    color: var(--text-secondary);
+                }
+
+                /* ========================================
+                           MAIN CONTENT
+                        ======================================== */
+                #main-content {
+                    flex: 1;
+                    padding: 28px 28px 40px;
+                }
+
+                .content-card {
+                    background: var(--card-bg);
+                    border-radius: var(--radius);
+                    box-shadow: var(--shadow);
+                    padding: 28px 28px;
+                    min-height: 200px;
+                }
+
+                /* ========================================
+                           RESPONSIVE
+                        ======================================== */
+                /* Overlay for mobile */
+                #sidebar-overlay {
+                    display: none;
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 1039;
+                    backdrop-filter: blur(2px);
+                }
+
+                @@media (max-width: 991.98px) {
+                    #sidebar {
+                        transform: translateX(-100%);
+                        width: var(--sidebar-width) !important;
+                    }
+
+                    body.sidebar-open #sidebar {
+                        transform: translateX(0);
+                    }
+
+                    body.sidebar-open #sidebar-overlay {
+                        display: block;
+                    }
+                    /* Reset collapse state on mobile */
+                    body.sidebar-open .brand-text,
+                    body.sidebar-open .nav-label,
+                    body.sidebar-open .nav-badge,
+                    body.sidebar-open .nav-section-label,
+                    body.sidebar-open .user-info {
+                        opacity: 1 !important;
+                        width: auto !important;
+                        pointer-events: auto !important;
+                    }
+
+                    body.sidebar-open #sidebar .nav-link {
+                        justify-content: flex-start;
+                        padding: 10px 12px;
+                    }
+
+                    body.sidebar-open .sidebar-user {
+                        justify-content: flex-start;
+                    }
+
+                    #main-wrapper {
+                        margin-left: 0 !important;
+                    }
+
+                    #main-content {
+                        padding: 18px 16px 32px;
+                    }
+                }
+
+                @@media (max-width: 575.98px) {
+                    .content-card {
+                        padding: 18px 16px;
+                    }
+                }
+
+                /* ========================================
+                           UTILITY CLASSES
+                        ======================================== */
+                .text-accent {
+                    color: var(--accent) !important;
+                }
+
+                .bg-accent {
+                    background: var(--accent) !important;
+                }
+        </style>
+    </head>
+    <body>
+
+        <!-- =====================
+         SIDEBAR OVERLAY (mobile)
+    ===================== -->
+        <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+        <!-- =====================
+         SIDEBAR
+    ===================== -->
+        <aside id="sidebar">
+
+            <!-- Brand -->
+            <a href="#" class="sidebar-brand">
+                <div class="brand-logo">
+                    <i class="bi bi-cup-hot-fill"></i>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-name">Lezzet Bahçesi</div>
+                    <div class="brand-sub">Yönetim Paneli</div>
+                </div>
+            </a>
+
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+
+                <!-- Ana Menü -->
+                <div class="nav-section-label">Ana Menü</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-grid-1x2-fill nav-icon"></i>
+                            <span class="nav-label">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-tags-fill nav-icon"></i>
+                            <span class="nav-label">Kategoriler</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-basket3-fill nav-icon"></i>
+                            <span class="nav-label">Ürünler</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Operasyonlar -->
+                <div class="nav-section-label">Operasyonlar</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-calendar2-check-fill nav-icon"></i>
+                            <span class="nav-label">Rezervasyonlar</span>
+                            <span class="nav-badge">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-bag-check-fill nav-icon"></i>
+                            <span class="nav-label">Siparişler</span>
+                            <span class="nav-badge">12</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-people-fill nav-icon"></i>
+                            <span class="nav-label">Müşteriler</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-chat-square-dots-fill nav-icon"></i>
+                            <span class="nav-label">Yorumlar</span>
+                            <span class="nav-badge">5</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Analiz & Ayarlar -->
+                <div class="nav-section-label">Analiz & Ayarlar</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-bar-chart-line-fill nav-icon"></i>
+                            <span class="nav-label">İstatistikler</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-megaphone-fill nav-icon"></i>
+                            <span class="nav-label">Kampanyalar</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-gear-fill nav-icon"></i>
+                            <span class="nav-label">Ayarlar</span>
+                        </a>
+                    </li>
+                </ul>
+
+            </nav>
+
+            <!-- User Footer -->
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name">Admin</div>
+                        <div class="user-role">Yönetici</div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- =====================
+         MAIN WRAPPER
+    ===================== -->
+        <div id="main-wrapper">
+
+            <!-- =====================
+             TOP NAVBAR
+        ===================== -->
+            <header id="top-navbar">
+
+                <!-- Toggle Button -->
+                <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()" aria-label="Sidebar aç/kapat">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Page Title (desktop) -->
+                <span class="navbar-page-title">
+                    @ViewData["Title"]
+                </span>
+
+                <!-- Right Actions -->
+                <div class="navbar-actions">
+
+                    <!-- Notifications -->
+                    <div class="navbar-dropdown dropdown">
+                        <button class="nav-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-label="Bildirimler">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="badge-count">4</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" style="font-size:12px;color:#6b6b6b;padding:4px 12px 8px;">Bildirimler</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-bag-check text-success"></i>
+                                    Yeni sipariş alındı — #1042
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-calendar2-check text-primary"></i>
+                                    Yeni rezervasyon talebi
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    Yeni müşteri yorumu
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item justify-content-center text-accent" href="#" style="font-size:12.5px;font-weight:600;">
+                                    Tümünü Gör
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="navbar-dropdown dropdown">
+                        <button class="nav-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-label="Mesajlar">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            <span class="badge-dot"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" style="font-size:12px;color:#6b6b6b;padding:4px 12px 8px;">Mesajlar</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person-circle"></i>
+                                    Ayşe K. — Rezervasyon hakkında...
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person-circle"></i>
+                                    Mehmet D. — Teşekkür mesajı
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item justify-content-center text-accent" href="#" style="font-size:12.5px;font-weight:600;">
+                                    Tümünü Gör
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="navbar-dropdown dropdown">
+                        <button class="nav-action-btn dropdown-toggle" data-bs-toggle="dropdown" aria-label="Hızlı Bağlantılar">
+                            <i class="bi bi-lightning-fill"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header" style="font-size:12px;color:#6b6b6b;padding:4px 12px 8px;">Hızlı Bağlantılar</h6></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-plus-circle-fill"></i>
+                                    Yeni Ürün Ekle
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-folder-plus"></i>
+                                    Yeni Kategori Ekle
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-megaphone-fill"></i>
+                                    Yeni Kampanya Oluştur
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-calendar2-check-fill"></i>
+                                    Rezervasyonları Gör
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="navbar-divider"></div>
+
+                    <!-- User Profile -->
+                    <div class="navbar-dropdown dropdown">
+                        <button class="user-nav-btn dropdown-toggle" data-bs-toggle="dropdown">
+                            <div class="user-nav-avatar">A</div>
+                            <span class="user-nav-name d-none d-sm-inline">Admin</span>
+                            <i class="bi bi-chevron-down user-nav-chevron"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <div style="padding:10px 14px 12px;border-bottom:1px solid #f0f0f0;margin-bottom:6px;">
+                                    <div style="font-size:13.5px;font-weight:700;color:#1a1a1a;">Admin Kullanıcı</div>
+                                    <div style="font-size:11.5px;color:#888;">admin@lezzetbahcesi.com</div>
+                                </div>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-person-fill"></i>
+                                    Profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#">
+                                    <i class="bi bi-gear-fill"></i>
+                                    Ayarlar
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" style="color:#e74c3c;">
+                                    <i class="bi bi-box-arrow-right" style="color:#e74c3c;"></i>
+                                    Çıkış Yap
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </header>
+
+            <!-- =====================
+             MAIN CONTENT AREA
+        ===================== -->
+            <main id="main-content">
+                <div class="content-card">
+                    @RenderBody()
+                </div>
+            </main>
+
+        </div><!-- /#main-wrapper -->
+        <!-- Bootstrap 5 JS Bundle -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+                /* ========================================
+                   SIDEBAR TOGGLE LOGIC
+                ======================================== */
+
+                const isMobile = () => window.innerWidth < 992;
+
+                function toggleSidebar() {
+                    if (isMobile()) {
+                        document.body.classList.toggle('sidebar-open');
+                    } else {
+                        document.body.classList.toggle('sidebar-collapsed');
+                        // Persist preference
+                        const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+                        localStorage.setItem('sidebarCollapsed', isCollapsed);
+                    }
+                }
+
+                function closeSidebar() {
+                    document.body.classList.remove('sidebar-open');
+                }
+
+                // Restore sidebar state on desktop
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (!isMobile()) {
+                        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                        if (isCollapsed) {
+                            document.body.classList.add('sidebar-collapsed');
+                        }
+                    }
+                });
+
+                // Handle resize
+                window.addEventListener('resize', () => {
+                    if (!isMobile()) {
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+
+                /* ========================================
+                   ACTIVE NAV LINK HIGHLIGHTING
+                ======================================== */
+                document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+                    link.addEventListener('click', function() {
+                        document.querySelectorAll('#sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    });
+                });
+        </script>
+
+        @RenderSection("Scripts", required: false)
+    </body>
+</html>

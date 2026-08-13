@@ -1,0 +1,39 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en-US">
+
+    @await Component.InvokeAsync("_MenuHeadComponentPartial")
+ 
+  
+   <body class="body-header1" >
+   
+
+      <div class="mask-nav-2">
+      
+        
+        @await Component.InvokeAsync("_MenuMobileComponentPartial")
+         
+       
+         
+      </div>
+     
+    @await Component.InvokeAsync("_MenuNavbarComponentPartial")
+  
+ 
+    @await Component.InvokeAsync("_MenuTopImageSectionComponentPartial")
+   
+    
+     
+    @await Component.InvokeAsync("_MenuListComponentPartial")
+
+
+    @await Component.InvokeAsync("_MenuFooterComponentPartial")
+   
+
+    @await Component.InvokeAsync("_MenuScriptsComponentPartial")
+   
+   </body>
+</html>

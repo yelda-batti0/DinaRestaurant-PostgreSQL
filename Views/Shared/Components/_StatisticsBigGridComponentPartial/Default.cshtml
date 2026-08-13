@@ -1,0 +1,30 @@
+﻿<!-- BIG 3 -->
+<div class="big-grid">
+    <div class="big-card bc-amber">
+        <div class="bc-bg">👥</div>
+        <div class="big-lbl">Ortalama Grup Büyüklüğü</div>
+        <div class="big-num">@ViewBag.avgGroupSize</div>
+        <div class="big-sub">Rezervasyon başına kişi sayısı</div>
+        <div class="big-trend tu">
+            <i class="bi bi-people-fill"></i> Toplam misafir toplamından hesaplandı
+        </div>
+    </div>
+    <div class="big-card bc-sky">
+        <div class="bc-bg">⭐</div>
+        <div class="big-lbl">Ortalama Müşteri Puanı</div>
+        <div class="big-num" style="color:var(--accent-dark);">@ViewBag.avgRating</div>
+        <div class="big-sub">@ViewBag.totalReview değerlendirme üzerinden</div>
+        <div class="big-trend tu">
+            <i class="bi bi-star-fill"></i> 5 üzerinden ortalama puan
+        </div>
+    </div>
+    <div class="big-card bc-sage">
+        <div class="bc-bg">📅</div>
+        <div class="big-lbl">Günlük Ort. Rezervasyon</div>
+        <div class="big-num" style="color:#16a34a;">@ViewBag.dailyAvgReservation</div>
+        <div class="big-sub">Son 30 gün ortalaması</div>
+        <div class="big-trend tu">
+            <i class="bi bi-calendar-check"></i> Son 30 günde @ViewBag.dailyAvgReservation/gün
+        </div>
+    </div>
+</div>

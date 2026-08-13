@@ -1,0 +1,90 @@
+﻿<!-- KPI GRID -->
+<div class="kpi-grid">
+    <div class="kpi-card kc-amber">
+        <div class="kpi-bg"><i class="bi bi-calendar2-week-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-calendar2-week-fill" style="color:#c8861e;"></i></div>
+            <div class="kpi-trend tu"><i class="bi bi-arrow-up-short"></i>Tüm zamanlar</div>
+        </div>
+        <div class="kpi-num">@ViewBag.totalReservation</div>
+        <div class="kpi-lbl">Toplam Rezervasyon</div>
+        <div class="kpi-sub">Onaylanan + Bekleyen + İptal</div>
+    </div>
+
+    <div class="kpi-card kc-sage">
+        <div class="kpi-bg"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-check-circle-fill" style="color:#16a34a;"></i></div>
+            <div class="kpi-trend tu"><i class="bi bi-arrow-up-short"></i>%@ViewBag.approvalRate</div>
+        </div>
+        <div class="kpi-num">@ViewBag.approvedReservation</div>
+        <div class="kpi-lbl">Onaylanan Rezervasyon</div>
+        <div class="kpi-sub">%@ViewBag.approvalRate onay oranı</div>
+    </div>
+
+    <div class="kpi-card kc-lemon">
+        <div class="kpi-bg"><i class="bi bi-hourglass-split"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-hourglass-split" style="color:#b45309;"></i></div>
+            <div class="kpi-trend tn"><i class="bi bi-dash"></i>Bekliyor</div>
+        </div>
+        <div class="kpi-num">@ViewBag.pendingReservation</div>
+        <div class="kpi-lbl">Bekleyen Rezervasyon</div>
+        <div class="kpi-sub">Onay bekliyor</div>
+    </div>
+
+    <div class="kpi-card kc-rose">
+        <div class="kpi-bg"><i class="bi bi-x-circle-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-x-circle-fill" style="color:#dc2626;"></i></div>
+            <div class="kpi-trend td"><i class="bi bi-arrow-down-short"></i>%@ViewBag.cancelRate</div>
+        </div>
+        <div class="kpi-num">@ViewBag.cancelledReservation</div>
+        <div class="kpi-lbl">İptal Edilen</div>
+        <div class="kpi-sub">%@ViewBag.cancelRate iptal oranı</div>
+    </div>
+
+    <div class="kpi-card kc-sky">
+        <div class="kpi-bg"><i class="bi bi-star-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-star-fill" style="color:#2563eb;"></i></div>
+            <div class="kpi-trend tu"><i class="bi bi-arrow-up-short"></i>@ViewBag.avgRating / 5</div>
+        </div>
+        <div class="kpi-num">@ViewBag.totalReview</div>
+        <div class="kpi-lbl">Toplam Değerlendirme</div>
+        <div class="kpi-sub">Ort. puan @ViewBag.avgRating / 5</div>
+    </div>
+
+    <div class="kpi-card kc-lavender">
+        <div class="kpi-bg"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-people-fill" style="color:#7c3aed;"></i></div>
+            <div class="kpi-trend tu"><i class="bi bi-arrow-up-short"></i>Toplam misafir</div>
+        </div>
+        <div class="kpi-num">@ViewBag.totalCustomer</div>
+        <div class="kpi-lbl">Toplam Misafir Sayısı</div>
+        <div class="kpi-sub">Tüm rezervasyonların toplamı</div>
+    </div>
+
+    <div class="kpi-card kc-mint">
+        <div class="kpi-bg"><i class="bi bi-basket3-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-basket3-fill" style="color:#0d9488;"></i></div>
+            <div class="kpi-trend tn"><i class="bi bi-dash"></i>@ViewBag.categoryCount kategori</div>
+        </div>
+        <div class="kpi-num">@ViewBag.totalProduct</div>
+        <div class="kpi-lbl">Toplam Aktif Ürün</div>
+        <div class="kpi-sub">@ViewBag.categoryCount aktif kategoride</div>
+    </div>
+
+    <div class="kpi-card kc-peach">
+        <div class="kpi-bg"><i class="bi bi-trophy-fill"></i></div>
+        <div class="kpi-top">
+            <div class="kpi-icon"><i class="bi bi-trophy-fill" style="color:#c2410c;"></i></div>
+            <div class="kpi-trend tu"><i class="bi bi-arrow-up-short"></i>%@ViewBag.fiveStarPercent</div>
+        </div>
+        <div class="kpi-num">@ViewBag.fiveStarReview</div>
+        <div class="kpi-lbl">5 Yıldızlı Yorum</div>
+        <div class="kpi-sub">Toplam yorumun %@ViewBag.fiveStarPercent'i</div>
+    </div>
+</div>

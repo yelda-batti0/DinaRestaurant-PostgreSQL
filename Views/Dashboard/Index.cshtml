@@ -1,0 +1,118 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+    @await Component.InvokeAsync("_DashboardHeadComponentPartial")
+   
+<body>
+    <div class="dashboard-wrap">
+
+        @await Component.InvokeAsync("_DashboardHeaderComponentPartial")
+
+        @await Component.InvokeAsync("_DashboardStatisticsCardsComponentPartial")
+      
+        @await Component.InvokeAsync("_DashboardLastReservationsComponentPartial")
+       
+        @await Component.InvokeAsync("_ChartComponentPartial")
+      
+     
+
+        <!-- ══════════════════════════════════════════
+             5. HIZLI İŞLEMLER  +  6. SON DEĞERLENDİRMELER
+        ══════════════════════════════════════════ -->
+        <div class="row g-3">
+            @await Component.InvokeAsync("_DashboardQuickActionsComponentPartial")
+         
+            @await Component.InvokeAsync("_DashboardLastReviewsComponentPartial")
+          
+
+         
+
+            <!-- ÖZET + TAKVİM -->
+            <div class="col-xl-4">
+                <div class="dash-card h-100">
+                    <div class="dash-card-header">
+                        <div>
+                            <div class="section-title">Haftalık Özet</div>
+                            <div class="section-sub">Bu haftaki performans</div>
+                        </div>
+                    </div>
+                    <div class="dash-card-body">
+
+                        <div class="d-flex flex-column gap-3">
+
+                            <div>
+                                <div class="d-flex justify-content-between mb-1" style="font-size:12.5px;">
+                                    <span style="font-weight:600;">Onay Oranı</span>
+                                    <span style="font-weight:700;color:#16a34a;">%88</span>
+                                </div>
+                                <div style="background:#f0ede8;border-radius:6px;height:7px;overflow:hidden;">
+                                    <div style="width:88%;height:100%;background:linear-gradient(90deg,var(--green),#16a34a);border-radius:6px;"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between mb-1" style="font-size:12.5px;">
+                                    <span style="font-weight:600;">Masa Doluluk</span>
+                                    <span style="font-weight:700;color:var(--accent-dark);">%74</span>
+                                </div>
+                                <div style="background:#f0ede8;border-radius:6px;height:7px;overflow:hidden;">
+                                    <div style="width:74%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-dark));border-radius:6px;"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between mb-1" style="font-size:12.5px;">
+                                    <span style="font-weight:600;">Müşteri Memnuniyeti</span>
+                                    <span style="font-weight:700;color:var(--blue);">%92</span>
+                                </div>
+                                <div style="background:#f0ede8;border-radius:6px;height:7px;overflow:hidden;">
+                                    <div style="width:92%;height:100%;background:linear-gradient(90deg,var(--blue),#2563eb);border-radius:6px;"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="d-flex justify-content-between mb-1" style="font-size:12.5px;">
+                                    <span style="font-weight:600;">İptal Oranı</span>
+                                    <span style="font-weight:700;color:var(--red);">%8</span>
+                                </div>
+                                <div style="background:#f0ede8;border-radius:6px;height:7px;overflow:hidden;">
+                                    <div style="width:8%;height:100%;background:linear-gradient(90deg,var(--red),#dc2626);border-radius:6px;"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <hr style="border-color:var(--border);margin:18px 0;">
+
+                        <!-- Gelir özeti -->
+                        <div style="background:linear-gradient(135deg,var(--accent-soft),rgba(230,160,60,0.05));border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;">
+                            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px;">
+                                <i class="bi bi-graph-up-arrow" style="color:var(--accent);"></i> Bu Haftanın Cirosu
+                            </div>
+                            <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:800;color:var(--text);line-height:1;">
+                                ₺ 28.450
+                            </div>
+                            <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+                                Geçen haftaya göre <strong style="color:#16a34a;">+₺3.120</strong> artış
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /row -->
+
+    </div><!-- /dashboard-wrap -->
+    @await Component.InvokeAsync("_DashboardScriptsComponentPartial")
+
+  
+</body>
+</html>

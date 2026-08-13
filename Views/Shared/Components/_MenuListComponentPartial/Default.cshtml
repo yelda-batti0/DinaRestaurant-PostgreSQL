@@ -1,0 +1,56 @@
+﻿@using System.Linq
+@model List<DatabaseMastery.DinnerMenuPostgreSQL.Entities.Product>
+
+<!-- MAIN WRAP CONTENT -->
+<section class="menu-1col-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+
+                @{
+                    var categories = Model
+                    .Where(p => p.Status && p.Category.CategoryStatus)
+                    .GroupBy(p => p.Category)
+                    .ToList();
+                }
+
+                @foreach (var categoryGroup in categories)
+                {
+                    <!-- CATEGORY HEADER -->
+                    <div class="categ-name">
+                        <h2>@categoryGroup.Key.CategoryName</h2>
+                    </div>
+
+                    <div class="menu-holder menu-1col">
+
+                        @foreach (var product in categoryGroup)
+                        {
+                            <div class="menu-post clearfix">
+                                <div class="menu-post-img">
+                                    <a href="@product.ImageUrl" class="lightbox" title="@product.ProductName">
+                                        <img width="400" height="400" src="@product.ImageUrl" alt="@product.ProductName" title="@product.ProductName" />
+                                    </a>
+                                </div>
+                                <div class="menu-post-desc">
+                                    <h4>
+                                        <span class="menu-title">@product.ProductName</span>
+                                        <span class="menu-dots"></span>
+                                        <span class="menu-price">₺ @product.Price.ToString("F2")</span>
+                                    </h4>
+                                    <div class="menu-text">@product.Description</div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                    <!--menu-1-col-->
+                }
+
+            </div>
+            <!--col-md-10-->
+        </div>
+        <!--row-->
+    </div>
+    <!--container-->
+</section>
+<!-- /MAIN WRAP CONTENT -->

@@ -1,0 +1,118 @@
+﻿<!-- ══════════════════════════════════════════
+         1. İSTATİSTİK KARTLARI
+    ══════════════════════════════════════════ -->
+<div class="row g-3 mb-4">
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-orange">
+            <div class="stat-icon" style="background:var(--accent-soft);">
+                <i class="bi bi-calendar2-week-fill" style="color:var(--accent-dark);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.totalReservationCount</div>
+                <div class="stat-lbl">Toplam Rezervasyon</div>
+                <div class="stat-sub">Tüm zamanlar</div>
+            </div>
+            <div class="stat-trend trend-up ms-auto"><i class="bi bi-arrow-up-short"></i>12%</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-yellow">
+            <div class="stat-icon" style="background:var(--yellow-soft);">
+                <i class="bi bi-hourglass-split" style="color:var(--yellow);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.pendingReservationCount</div>
+                <div class="stat-lbl">Bekleyen Rezervasyon</div>
+                <div class="stat-sub">Onay bekliyor</div>
+            </div>
+            <div class="stat-trend trend-neu ms-auto"><i class="bi bi-dash"></i>0%</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-green">
+            <div class="stat-icon" style="background:var(--green-soft);">
+                <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.approvedReservationCount</div>
+                <div class="stat-lbl">Onaylanan Rezervasyon</div>
+                <div class="stat-sub">Bu ay: 34</div>
+            </div>
+            <div class="stat-trend trend-up ms-auto"><i class="bi bi-arrow-up-short"></i>8%</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-red">
+            <div class="stat-icon" style="background:var(--red-soft);">
+                <i class="bi bi-x-circle-fill" style="color:var(--red);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.cancelledReservationCount</div>
+                <div class="stat-lbl">İptal Edilen Rezervasyon</div>
+                <div class="stat-sub">Bu ay: 0</div>
+            </div>
+            <div class="stat-trend trend-down ms-auto"><i class="bi bi-arrow-down-short"></i>4%</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-blue">
+            <div class="stat-icon" style="background:var(--blue-soft);">
+                <i class="bi bi-calendar-day-fill" style="color:var(--blue);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.todayReservationCount</div>
+                <div class="stat-lbl">Bugünkü Rezervasyon</div>
+                <div class="stat-sub">En yakın: 19:30</div>
+            </div>
+            <div class="stat-trend trend-up ms-auto"><i class="bi bi-arrow-up-short"></i>3</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-purple">
+            <div class="stat-icon" style="background:var(--purple-soft);">
+                <i class="bi bi-people-fill" style="color:var(--purple);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.totalCustomerCount</div>
+                <div class="stat-lbl">Toplam Müşteri Sayısı</div>
+                <div class="stat-sub">Bu hafta: +18</div>
+            </div>
+            <div class="stat-trend trend-up ms-auto"><i class="bi bi-arrow-up-short"></i>5%</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-teal">
+            <div class="stat-icon" style="background:var(--teal-soft);">
+                <i class="bi bi-basket3-fill" style="color:var(--teal);"></i>
+            </div>
+            <div>
+                <div class="stat-num">@ViewBag.totalMenuProductCount</div>
+                <div class="stat-lbl"> Aktif Toplam Ürün Sayısı</div>
+                <div class="stat-sub">4 kategoride</div>
+            </div>
+            <div class="stat-trend trend-neu ms-auto"><i class="bi bi-dash"></i>+2</div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card sc-dark">
+            <div class="stat-icon" style="background:#f5f2ee;">
+                <i class="bi bi-receipt" style="color:#555;"></i>
+            </div>
+            <div>
+                <div class="stat-num">29</div>
+                <div class="stat-lbl">Bugünkü Sipariş Sayısı</div>
+                <div class="stat-sub">₺ 4.280 ciro</div>
+            </div>
+            <div class="stat-trend trend-up ms-auto"><i class="bi bi-arrow-up-short"></i>11%</div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,58 @@
+﻿@{
+    var topProducts = ViewBag.TopProducts as IEnumerable<dynamic>;
+    var rnc = new[] { "rn-1", "rn-2", "rn-3", "rn-o", "rn-o" };
+    int rank = 1;
+}
+
+<div class="col-xl-4">
+    <div class="sec-card" style="animation-delay:.18s;">
+        <div class="card-head">
+            <div class="ch-icon" style="background:var(--yellow-soft);">
+                <i class="bi bi-trophy-fill" style="color:var(--yellow);"></i>
+            </div>
+            <div>
+                <div class="sec-title">En İyi Ürünler</div>
+                <div class="sec-sub">Yorum sayısına göre top 5</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="rank-list">
+                @if (topProducts != null)
+                {
+                    @foreach (var p in topProducts)
+                    {
+                        var ratingVal = double.Parse(p.AvgRating, System.Globalization.CultureInfo.InvariantCulture);
+                        var filledStars = new string('★', (int)Math.Round(ratingVal));
+                        var emptyStars = new string('★', 5 - (int)Math.Round(ratingVal));
+
+                        <div class="rank-item">
+                            <div class="rank-num @rnc[rank - 1]">@rank</div>
+                            <div class="rank-av" style="background:#f5f2ee;font-size:16px;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;">
+                                <i class="bi bi-basket3-fill" style="color:var(--accent-dark);"></i>
+                            </div>
+                            <div>
+                                <div class="rank-name">@p.ProductName</div>
+                                <div class="rank-meta">@p.ReviewCount yorum</div>
+                            </div>
+                            <div class="rank-right">
+                                <div class="rank-val">@p.AvgRating</div>
+                                <div class="rank-badge">
+                                    <span style="color:var(--accent);">@filledStars</span><span style="color:#e0dbd4;">@emptyStars</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        rank++;
+                    }
+                }
+                else
+                {
+                    <div style="text-align:center;padding:32px 0;color:var(--muted);font-size:13px;">
+                        <i class="bi bi-star" style="font-size:28px;display:block;margin-bottom:10px;color:#ddd;"></i>
+                        Henüz değerlendirme yok.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

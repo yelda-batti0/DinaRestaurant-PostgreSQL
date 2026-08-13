@@ -1,0 +1,22 @@
+﻿@using DatabaseMastery.DinnerMenuPostgreSQL.Dtos.ChartDtos
+@model List<ReservationChartDto>
+<div class="col-xl-5">
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div>
+                <div class="section-title">Günlük Rezervasyonlar</div>
+                <div class="section-sub">Son 7 gün</div>
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <div style="height:220px;">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            window.lineChartLabels = [@Html.Raw(string.Join(",", Model.Select(x => $"\"{x.Day}\"")))];
+            window.lineChartData = [@Html.Raw(string.Join(",", Model.Select(x => x.Count)))];
+    </script>
+</div>

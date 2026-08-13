@@ -1,0 +1,868 @@
+﻿@model List<ResultCategoryDto>
+
+@{
+    ViewData["Title"] = "CategoryList";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+
+<style>
+    /* ========================================
+       PAGE-SCOPED STYLES — CategoryList
+    ======================================== */
+
+    /* Variables (inherits from layout, defines extras) */
+    :root {
+        --cat-accent: #e6a03c;
+        --cat-accent-soft: rgba(230, 160, 60, 0.10);
+        --cat-accent-dark: #c8861e;
+        --cat-green: #22c55e;
+        --cat-green-soft: rgba(34, 197, 94, 0.10);
+        --cat-red: #ef4444;
+        --cat-red-soft: rgba(239, 68, 68, 0.10);
+        --cat-border: #f0ede8;
+        --cat-row-hover: #fdfcfa;
+        --cat-shadow-row: 0 2px 8px rgba(0,0,0,0.05);
+        --cat-radius: 12px;
+        --cat-img-size: 48px;
+    }
+
+    /* ---- Page Header ---- */
+    .cat-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+    }
+
+    .cat-page-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .cat-page-desc {
+        font-size: 13.5px;
+        color: #888;
+        font-weight: 400;
+        margin: 0;
+    }
+
+    .btn-add-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--cat-accent), var(--cat-accent-dark));
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 14px rgba(230,160,60,0.32);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-add-cat:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(230,160,60,0.42);
+        color: #fff;
+    }
+
+    .btn-add-cat:active {
+        transform: translateY(0);
+    }
+
+    /* ---- Stats Strip ---- */
+    .cat-stats-strip {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid var(--cat-border);
+        border-radius: 30px;
+        padding: 7px 16px 7px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .stat-pill .pill-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .stat-pill .pill-count {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a1a1a;
+    }
+
+    /* ---- Search & Filter Bar ---- */
+    .cat-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .cat-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+        max-width: 320px;
+    }
+
+    .cat-search-wrap .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+        font-size: 15px;
+        pointer-events: none;
+    }
+
+    .cat-search-input {
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        border: 1px solid var(--cat-border);
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #1a1a1a;
+        outline: none;
+        transition: all 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .cat-search-input:focus {
+        border-color: var(--cat-accent);
+        box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+    }
+
+    .cat-filter-select {
+        padding: 9px 14px;
+        border: 1px solid var(--cat-border);
+        border-radius: 10px;
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .cat-filter-select:focus {
+        border-color: var(--cat-accent);
+        box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+    }
+
+    .cat-result-count {
+        margin-left: auto;
+        font-size: 12.5px;
+        color: #aaa;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* ---- Table Container ---- */
+    .cat-table-card {
+        background: #fff;
+        border: 1px solid var(--cat-border);
+        border-radius: var(--cat-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    }
+
+    /* ---- Table ---- */
+    .cat-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Head */
+    .cat-table thead tr {
+        background: #fafaf8;
+        border-bottom: 2px solid var(--cat-border);
+    }
+
+    .cat-table thead th {
+        padding: 13px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #aaa;
+        text-align: left;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .cat-table thead th.col-num {
+        width: 48px;
+        text-align: center;
+    }
+
+    .cat-table thead th.col-img {
+        width: 72px;
+    }
+
+    .cat-table thead th.col-status {
+        width: 110px;
+    }
+
+    .cat-table thead th.col-actions {
+        width: 130px;
+        text-align: center;
+    }
+
+    /* Body rows */
+    .cat-table tbody tr {
+        border-bottom: 1px solid #f5f2ee;
+        transition: background 0.17s ease, box-shadow 0.17s ease;
+        animation: rowFadeIn 0.35s ease both;
+    }
+
+    .cat-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .cat-table tbody tr:hover {
+        background: var(--cat-row-hover);
+    }
+
+    /* Staggered row animation */
+    @for (var i = 0; i < 20; i++) {
+        <text>
+        .cat-table tbody tr:nth-child(@(i+1)) { animation-delay: @(i * 40)ms; }
+        </text>
+    }
+
+    @@keyframes rowFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cat-table tbody td {
+        padding: 14px 16px;
+        vertical-align: middle;
+        font-size: 13.5px;
+        color: #333;
+    }
+
+    .cat-table tbody td.col-num {
+        text-align: center;
+        font-size: 12px;
+        color: #bbb;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Row number chip */
+    .row-num-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        background: #f5f2ee;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #aaa;
+    }
+
+    /* ---- Category Image ---- */
+    .cat-img-wrap {
+        width: var(--cat-img-size);
+        height: var(--cat-img-size);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #f5f2ee;
+        border: 2px solid #ede9e2;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cat-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .cat-table tbody tr:hover .cat-img-wrap img {
+        transform: scale(1.08);
+    }
+
+    .cat-img-placeholder {
+        font-size: 20px;
+        color: #ccc;
+    }
+
+    /* ---- Category Name ---- */
+    .cat-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        letter-spacing: -0.01em;
+    }
+
+    .cat-id-sub {
+        font-size: 11.5px;
+        color: #bbb;
+        margin-top: 2px;
+        font-weight: 400;
+    }
+
+    /* ---- Status Badge ---- */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .status-badge .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-badge.active {
+        background: var(--cat-green-soft);
+        color: #16a34a;
+        border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .status-badge.active .badge-dot {
+        background: var(--cat-green);
+        box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+        animation: pulseDot 2s infinite;
+    }
+
+    .status-badge.passive {
+        background: var(--cat-red-soft);
+        color: #dc2626;
+        border: 1px solid rgba(239,68,68,0.2);
+    }
+
+    .status-badge.passive .badge-dot {
+        background: var(--cat-red);
+    }
+
+    @@keyframes pulseDot {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
+        50%       { box-shadow: 0 0 0 4px rgba(34,197,94,0.12); }
+    }
+
+    /* ---- Action Buttons ---- */
+    .action-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.18s ease;
+        position: relative;
+    }
+
+    .btn-action.edit {
+        background: #fff7ed;
+        color: var(--cat-accent-dark);
+        border-color: #fde8c0;
+    }
+
+    .btn-action.edit:hover {
+        background: var(--cat-accent);
+        color: #fff;
+        border-color: var(--cat-accent);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(230,160,60,0.35);
+    }
+
+    .btn-action.delete {
+        background: #fff5f5;
+        color: var(--cat-red);
+        border-color: #fecaca;
+    }
+
+    .btn-action.delete:hover {
+        background: var(--cat-red);
+        color: #fff;
+        border-color: var(--cat-red);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(239,68,68,0.32);
+    }
+
+    /* Tooltip */
+    .btn-action::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%) scale(0.85);
+        background: #1a1a1a;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        padding: 4px 8px;
+        border-radius: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-action:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+
+    /* ---- Empty State ---- */
+    .cat-empty {
+        padding: 64px 24px;
+        text-align: center;
+    }
+
+    .cat-empty-icon {
+        width: 72px;
+        height: 72px;
+        background: #f5f2ee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: #ccc;
+        margin: 0 auto 18px;
+    }
+
+    .cat-empty-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .cat-empty-desc {
+        font-size: 13.5px;
+        color: #aaa;
+        margin-bottom: 20px;
+    }
+
+    /* ---- Pagination ---- */
+    .cat-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-top: 1px solid var(--cat-border);
+        background: #fafaf8;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .pag-info {
+        font-size: 12.5px;
+        color: #aaa;
+        font-weight: 500;
+    }
+
+    .pag-info strong {
+        color: #555;
+    }
+
+    .pag-controls {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pag-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--cat-border);
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        cursor: pointer;
+        color: #555;
+        transition: all 0.15s;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        text-decoration: none;
+    }
+
+    .pag-btn:hover {
+        border-color: var(--cat-accent);
+        color: var(--cat-accent-dark);
+        background: var(--cat-accent-soft);
+    }
+
+    .pag-btn.active {
+        background: var(--cat-accent);
+        border-color: var(--cat-accent);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(230,160,60,0.35);
+    }
+
+    .pag-btn:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* ---- Responsive ---- */
+    @@media (max-width: 767.98px) {
+        .cat-page-header { flex-direction: column; align-items: flex-start; }
+        .cat-stats-strip { gap: 8px; }
+        .col-num { display: none !important; }
+        .cat-result-count { display: none; }
+        .cat-table thead th, .cat-table tbody td { padding: 12px 10px; }
+    }
+
+    @@media (max-width: 575.98px) {
+        .cat-id-sub { display: none; }
+    }
+</style>
+
+<!-- =====================================================
+     PAGE HEADER
+===================================================== -->
+<div class="cat-page-header">
+    <div>
+        <h1 class="cat-page-title">
+            <i class="bi bi-tags-fill me-2" style="color:var(--cat-accent);font-size:20px;vertical-align:middle;"></i>
+            Kategori Yönetimi
+        </h1>
+        <p class="cat-page-desc">Menü kategorilerinizi görüntüleyin, düzenleyin ve yönetin.</p>
+    </div>
+    <a href="/Admin/Category/Add" class="btn-add-cat">
+        <i class="bi bi-plus-lg"></i>
+        Yeni Kategori Ekle
+    </a>
+</div>
+
+<!-- =====================================================
+     STATS STRIP
+===================================================== -->
+@{
+    var totalCount  = Model?.Count ?? 0;
+    var activeCount = Model?.Count(c => c.CategoryStatus) ?? 0;
+    var passiveCount = totalCount - activeCount;
+}
+
+<div class="cat-stats-strip">
+    <div class="stat-pill">
+        <div class="pill-icon" style="background:#f5f2ee;">
+            <i class="bi bi-grid-1x2-fill" style="color:#aaa;"></i>
+        </div>
+        <span>Toplam</span>
+        <span class="pill-count">@totalCount</span>
+    </div>
+    <div class="stat-pill">
+        <div class="pill-icon" style="background:var(--cat-green-soft);">
+            <i class="bi bi-check-circle-fill" style="color:var(--cat-green);"></i>
+        </div>
+        <span>Aktif</span>
+        <span class="pill-count" style="color:#16a34a;">@activeCount</span>
+    </div>
+    <div class="stat-pill">
+        <div class="pill-icon" style="background:var(--cat-red-soft);">
+            <i class="bi bi-x-circle-fill" style="color:var(--cat-red);"></i>
+        </div>
+        <span>Pasif</span>
+        <span class="pill-count" style="color:#dc2626;">@passiveCount</span>
+    </div>
+</div>
+
+<!-- =====================================================
+     TOOLBAR
+===================================================== -->
+<div class="cat-toolbar">
+    <div class="cat-search-wrap">
+        <i class="bi bi-search search-icon"></i>
+        <input
+            type="text"
+            class="cat-search-input"
+            id="catSearchInput"
+            placeholder="Kategori ara..."
+            oninput="filterTable()"
+        />
+    </div>
+    <select class="cat-filter-select" id="catStatusFilter" onchange="filterTable()">
+        <option value="all">Tüm Durumlar</option>
+        <option value="active">Aktif</option>
+        <option value="passive">Pasif</option>
+    </select>
+    <span class="cat-result-count" id="catResultCount">
+        @totalCount kayıt gösteriliyor
+    </span>
+</div>
+
+<!-- =====================================================
+     TABLE CARD
+===================================================== -->
+<div class="cat-table-card">
+
+    @if (Model == null || !Model.Any())
+    {
+        <!-- Empty State -->
+        <div class="cat-empty">
+            <div class="cat-empty-icon">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div class="cat-empty-title">Henüz kategori eklenmemiş</div>
+            <p class="cat-empty-desc">Menünüzü düzenlemek için ilk kategorinizi oluşturun.</p>
+            <a href="/Admin/Category/Add" class="btn-add-cat" style="display:inline-flex;">
+                <i class="bi bi-plus-lg"></i>
+                Yeni Kategori Ekle
+            </a>
+        </div>
+    }
+    else
+    {
+        <div style="overflow-x:auto;">
+            <table class="cat-table" id="catTable">
+                <thead>
+                    <tr>
+                        <th class="col-num">#</th>
+                        <th class="col-img">Görsel</th>
+                        <th>Kategori Adı</th>
+                        <th class="col-status">Durum</th>
+                        <th class="col-actions">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="catTableBody">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var cat = Model[i];
+                        var isActive = cat.CategoryStatus;
+                        <tr
+                            data-name="@cat.CategoryName.ToLower()"
+                            data-status="@(isActive ? "active" : "passive")"
+                        >
+                            <!-- Row Number -->
+                            <td class="col-num">
+                                <span class="row-num-chip">@(i + 1)</span>
+                            </td>
+
+                            <!-- Image -->
+                            <td class="col-img">
+                                <div class="cat-img-wrap">
+                                    @if (!string.IsNullOrWhiteSpace(cat.CategoryImageUrl))
+                                    {
+                                        <img
+                                            src="@cat.CategoryImageUrl"
+                                            alt="@cat.CategoryName"
+                                            loading="lazy"
+                                            onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                                        />
+                                        <span class="cat-img-placeholder" style="display:none;">
+                                            <i class="bi bi-image"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="cat-img-placeholder">
+                                            <i class="bi bi-image"></i>
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+
+                            <!-- Name -->
+                            <td>
+                                <div class="cat-name">@cat.CategoryName</div>
+                                <div class="cat-id-sub">#@cat.CategoryId</div>
+                            </td>
+
+                            <!-- Status -->
+                            <td class="col-status">
+                                @if (isActive)
+                                {
+                                    <span class="status-badge active">
+                                        <span class="badge-dot"></span>
+                                        Aktif
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge passive">
+                                        <span class="badge-dot"></span>
+                                        Pasif
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Actions -->
+                            <td class="col-actions">
+                                <div class="action-group">
+                                    <a
+                                        href="/Admin/Category/Edit/@cat.CategoryId"
+                                        class="btn-action edit"
+                                        data-tooltip="Düzenle"
+                                        aria-label="Düzenle"
+                                    >
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <button
+                                        class="btn-action delete"
+                                        data-tooltip="Sil"
+                                        aria-label="Sil"
+                                        onclick="confirmDelete(@cat.CategoryId, '@cat.CategoryName')"
+                                    >
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Footer -->
+        <div class="cat-pagination">
+            <div class="pag-info">
+                Toplam <strong>@totalCount</strong> kategori
+            </div>
+            <div class="pag-controls">
+                <button class="pag-btn" disabled aria-label="Önceki">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <a href="#" class="pag-btn active">1</a>
+                <button class="pag-btn" disabled aria-label="Sonraki">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    }
+
+</div>
+
+<!-- =====================================================
+     DELETE CONFIRM MODAL
+===================================================== -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border-radius:16px;border:1px solid #f0ede8;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.12);">
+            <div class="modal-body" style="padding:32px 28px 24px;text-align:center;">
+                <div style="width:60px;height:60px;background:#fff5f5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px;color:#ef4444;border:1px solid #fecaca;">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                <h5 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Kategori Silinsin mi?</h5>
+                <p style="font-size:13.5px;color:#888;margin-bottom:4px;">
+                    <strong id="deleteCatName" style="color:#333;"></strong> adlı kategori kalıcı olarak silinecektir.
+                </p>
+                <p style="font-size:12.5px;color:#bbb;margin-bottom:0;">Bu işlem geri alınamaz.</p>
+            </div>
+            <div style="padding:0 28px 24px;display:flex;gap:10px;">
+                <button
+                    type="button"
+                    class="btn"
+                    data-bs-dismiss="modal"
+                    style="flex:1;border-radius:10px;border:1px solid #ebebeb;background:#fff;font-size:13.5px;font-weight:600;color:#555;padding:10px;"
+                >
+                    Vazgeç
+                </button>
+                <a
+                    id="deleteConfirmLink"
+                    href="#"
+                    class="btn"
+                    style="flex:1;border-radius:10px;background:#ef4444;color:#fff;font-size:13.5px;font-weight:600;padding:10px;text-align:center;text-decoration:none;border:none;box-shadow:0 4px 12px rgba(239,68,68,0.28);"
+                >
+                    <i class="bi bi-trash3-fill me-1"></i> Evet, Sil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    /* ---- Search & Filter ---- */
+    function filterTable() {
+        const query  = document.getElementById('catSearchInput').value.toLowerCase().trim();
+        const status = document.getElementById('catStatusFilter').value;
+        const rows   = document.querySelectorAll('#catTableBody tr');
+        let visible  = 0;
+
+        rows.forEach(row => {
+            const name       = row.dataset.name || '';
+            const rowStatus  = row.dataset.status || '';
+            const nameMatch  = name.includes(query);
+            const statusMatch = status === 'all' || rowStatus === status;
+
+            if (nameMatch && statusMatch) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const countEl = document.getElementById('catResultCount');
+        if (countEl) {
+            countEl.textContent = visible + ' kayıt gösteriliyor';
+        }
+    }
+
+    /* ---- Delete Modal ---- */
+    function confirmDelete(id, name) {
+        document.getElementById('deleteCatName').textContent = name;
+        document.getElementById('deleteConfirmLink').href = '/Admin/Category/Delete/' + id;
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+</script>
+}

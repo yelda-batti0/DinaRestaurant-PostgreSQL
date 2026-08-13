@@ -1,0 +1,57 @@
+﻿@model List<CategoryAvgPriceChartDto>
+
+<div class="col-xl-3">
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div>
+                <div class="section-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Kategori Ort. Fiyatları</div>
+                <div class="section-sub">Aktif kategoriler</div>
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <!-- GRAFİK: 115PX -> 125PX YAPILDI -->
+            <div class="chart-wrap" style="height:125px;">
+                <canvas id="pieChart"></canvas>
+            </div>
+
+            <!-- LİSTE: 85PX -> 95PX YAPILDI (4 KATEGORİ TAM SIĞAR) -->
+            <div class="mt-2 d-flex flex-column custom-scroll" style="font-size:11.5px; max-height:89px; overflow-y:auto; padding-right:4px;" id="pieChartLegend">
+                @{
+                    var colors = new[] { "#e6a03c", "#3b82f6", "#22c55e", "#8b5cf6", "#14b8a6", "#ef4444", "#f59e0b" };
+                    for (int i = 0; i < Model.Count; i++)
+                    {
+                        <div class="d-flex align-items-center justify-content-between gap-2 py-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="width:9px;height:9px;border-radius:3px;background:@colors[i % colors.Length];display:inline-block;flex-shrink:0;"></span>
+                                <span style="white-space:nowrap;">@Model[i].CategoryName</span>
+                            </div>
+                            <span style="font-weight:700;color:var(--text);">₺@Model[i].AvgPrice.ToString("F2")</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- İnce Scrollbar Stili -->
+    <style>
+            .custom-scroll::-webkit-scrollbar {
+                width: 3px;
+            }
+
+            .custom-scroll::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+
+            .custom-scroll::-webkit-scrollbar-thumb {
+                background: #ccc;
+                border-radius: 4px;
+            }
+    </style>
+
+    <script>
+            window.pieChartLabels = [@Html.Raw(string.Join(",", Model.Select(x => $"\"{x.CategoryName}\"")))];
+            window.pieChartData = [@Html.Raw(string.Join(",", Model.Select(x => x.AvgPrice.ToString("F2", System.Globalization.CultureInfo.InvariantCulture))))];
+    </script>
+</div>

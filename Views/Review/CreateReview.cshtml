@@ -1,0 +1,979 @@
+﻿@model CreateReviewDto
+
+@{
+    ViewData["Title"] = "CreateReview";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+@* Ürün listesi için - Controller'dan ViewBag ile geçirilecek *@
+@* ViewBag.Products = SelectList *@
+
+<style>
+    :root {
+        --accent: #e6a03c;
+        --accent-dark: #c8861e;
+        --accent-soft: rgba(230,160,60,0.10);
+        --green: #22c55e;
+        --green-soft: rgba(34,197,94,0.10);
+        --red: #ef4444;
+        --red-soft: rgba(239,68,68,0.10);
+        --border: #eeebe5;
+        --text: #1a1a1a;
+        --muted: #9a9590;
+        --radius: 14px;
+        --radius-sm: 10px;
+        --tr: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        animation: fadeDown 0.4s ease both;
+    }
+
+    .pg-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .pg-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        text-decoration: none;
+        transition: var(--tr);
+        box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+    }
+
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+        }
+
+    /* ── LAYOUT ── */
+    .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 22px;
+        align-items: start;
+        animation: fadeUp 0.4s 0.06s ease both;
+    }
+
+    /* ── CARD ── */
+    .form-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-bottom: 18px;
+    }
+
+        .form-card:last-child {
+            margin-bottom: 0;
+        }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        background: #fafaf8;
+    }
+
+    .card-header-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .card-header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 2px;
+    }
+
+    .card-header-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 22px;
+    }
+
+    /* ── FORM ── */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .form-label .req {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+    .form-control {
+        padding: 11px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        background: #fff;
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.13);
+        }
+
+        .form-control:hover:not(:focus) {
+            border-color: #d8d4cc;
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 110px;
+        line-height: 1.6;
+    }
+
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+
+    /* Input with icon */
+    .input-wrap {
+        position: relative;
+    }
+
+        .input-wrap .i-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #ccc;
+            pointer-events: none;
+            transition: var(--tr);
+        }
+
+        .input-wrap .form-control {
+            padding-left: 38px;
+        }
+
+        .input-wrap:focus-within .i-icon {
+            color: var(--accent);
+        }
+
+        .input-wrap.textarea-wrap .i-icon {
+            top: 13px;
+            transform: none;
+        }
+
+    .field-error {
+        font-size: 11.5px;
+        color: var(--red);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ── STAR RATING ── */
+    .star-rating-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 6px;
+    }
+
+        .stars input[type="radio"] {
+            display: none;
+        }
+
+        .stars label {
+            font-size: 36px;
+            color: #e0dbd4;
+            cursor: pointer;
+            transition: var(--tr);
+            line-height: 1;
+        }
+
+            .stars input:checked ~ label,
+            .stars label:hover,
+            .stars label:hover ~ label {
+                color: var(--accent);
+                transform: scale(1.15);
+                text-shadow: 0 2px 8px rgba(230,160,60,0.35);
+            }
+
+    .star-hint {
+        font-size: 12.5px;
+        color: var(--muted);
+        font-weight: 500;
+        min-height: 18px;
+        transition: var(--tr);
+    }
+
+    .star-labels {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .star-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 600;
+        background: #f5f2ee;
+        color: #888;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .star-chip:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+        }
+
+        .star-chip.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+    /* ── STATUS SELECTOR ── */
+    .status-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .status-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--tr);
+        background: #fff;
+    }
+
+        .status-option:hover {
+            border-color: #d8d4cc;
+            background: #fdfcfa;
+        }
+
+    .so-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .so-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .so-check {
+        margin-left: auto;
+        font-size: 16px;
+        opacity: 0;
+        transition: var(--tr);
+    }
+
+    .status-option.sel-active {
+        border-color: var(--green);
+        background: var(--green-soft);
+    }
+
+    .status-option.sel-passive {
+        border-color: var(--red);
+        background: var(--red-soft);
+    }
+
+        .status-option.sel-active .so-check,
+        .status-option.sel-passive .so-check {
+            opacity: 1;
+        }
+
+    /* ── SUMMARY CARD ── */
+    .summary-card {
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2a26 100%);
+        border-radius: var(--radius);
+        padding: 22px;
+        color: #fff;
+    }
+
+    .summary-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .summary-title i {
+            color: var(--accent);
+        }
+
+    .summary-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 13px;
+    }
+
+        .summary-row:last-of-type {
+            margin-bottom: 0;
+        }
+
+    .sr-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: var(--accent);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .sr-lbl {
+        font-size: 10.5px;
+        color: rgba(255,255,255,0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 2px;
+    }
+
+    .sr-val {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.88);
+        min-height: 18px;
+    }
+
+    .summary-divider {
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        margin: 16px 0;
+    }
+
+    /* Stars preview in summary */
+    .sum-stars {
+        color: var(--accent);
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+        .sum-stars.empty {
+            color: rgba(255,255,255,0.2);
+        }
+
+    /* ── BUTTONS ── */
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: var(--tr);
+        box-shadow: 0 4px 16px rgba(230,160,60,0.30);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(230,160,60,0.42);
+        }
+
+    .btn-cancel-form {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: var(--tr);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+
+        .btn-cancel-form:hover {
+            background: rgba(255,255,255,0.07);
+            color: rgba(255,255,255,0.75);
+        }
+
+    /* ── RATING DISTRIBUTION PREVIEW ── */
+    .rating-dist {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .rd-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    .rd-label {
+        width: 14px;
+        text-align: right;
+        color: var(--muted);
+        font-weight: 600;
+    }
+
+    .rd-bar-wrap {
+        flex: 1;
+        background: #f0ede8;
+        border-radius: 6px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .rd-bar {
+        height: 100%;
+        background: var(--accent);
+        border-radius: 6px;
+        transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .rd-count {
+        width: 20px;
+        text-align: right;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 1100px) {
+        .form-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- ── PAGE HEADER ── -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title">
+            <i class="bi bi-star-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>
+            Yeni Değerlendirme
+        </h1>
+        <p class="pg-desc">Bir ürün için müşteri değerlendirmesi ekleyin.</p>
+    </div>
+    <a href="/Review/ReviewList/" class="btn-back">
+        <i class="bi bi-arrow-left"></i>
+        Listeye Dön
+    </a>
+</div>
+
+<form asp-action="CreateReview" method="post" id="reviewForm" novalidate>
+    <div class="form-layout">
+
+        <!-- ═══════════ SOL KOLON ═══════════ -->
+        <div>
+
+            <!-- MÜŞTERİ BİLGİSİ -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:var(--accent-soft);">
+                        <i class="bi bi-person-fill" style="color:var(--accent-dark);"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Müşteri Bilgisi</p>
+                        <p class="card-header-sub">Değerlendirmeyi yapan kişinin adı.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-person"></i> Müşteri Adı <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-person i-icon"></i>
+                                <input asp-for="CustomerName" class="form-control"
+                                       placeholder="Ahmet Yılmaz"
+                                       id="inpCustomer" oninput="updateSummary()" />
+                            </div>
+                            <span asp-validation-for="CustomerName" class="field-error">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÜRÜN SEÇİMİ -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:rgba(59,130,246,0.10);">
+                        <i class="bi bi-basket3-fill" style="color:#3b82f6;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Ürün Seçimi</p>
+                        <p class="card-header-sub">Değerlendirme yapılacak ürünü seçin.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-basket3"></i> Ürün <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-basket3 i-icon"></i>
+                                <select asp-for="ProductId"
+                                        asp-items="ViewBag.Products"
+                                        class="form-control"
+                                        id="inpProduct"
+                                        onchange="updateSummary()">
+                                    <option value="">— Ürün Seçin —</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="ProductId" class="field-error">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PUAN VE YORUM -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:rgba(245,158,11,0.10);">
+                        <i class="bi bi-star-fill" style="color:#f59e0b;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Puan & Yorum</p>
+                        <p class="card-header-sub">Yıldız puanı ve detaylı yorum giriniz.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <!-- STAR RATING -->
+                    <div class="form-group" style="margin-bottom:20px;">
+                        <label class="form-label">
+                            <i class="bi bi-star"></i> Puan <span class="req">*</span>
+                        </label>
+                        <div class="star-rating-wrap">
+                            <div class="stars">
+                                <input type="radio" asp-for="Rating" id="s5" value="5" onchange="onStarChange(5)" />
+                                <label for="s5" title="Mükemmel">★</label>
+                                <input type="radio" asp-for="Rating" id="s4" value="4" onchange="onStarChange(4)" />
+                                <label for="s4" title="Çok İyi">★</label>
+                                <input type="radio" asp-for="Rating" id="s3" value="3" onchange="onStarChange(3)" />
+                                <label for="s3" title="İyi">★</label>
+                                <input type="radio" asp-for="Rating" id="s2" value="2" onchange="onStarChange(2)" />
+                                <label for="s2" title="Orta">★</label>
+                                <input type="radio" asp-for="Rating" id="s1" value="1" onchange="onStarChange(1)" />
+                                <label for="s1" title="Kötü">★</label>
+                            </div>
+                            <div class="star-hint" id="starHint">Bir puan seçin...</div>
+                            <div class="star-labels">
+                                <span class="star-chip" onclick="setRating(1)">★ Kötü</span>
+                                <span class="star-chip" onclick="setRating(2)">★★ Orta</span>
+                                <span class="star-chip" onclick="setRating(3)">★★★ İyi</span>
+                                <span class="star-chip" onclick="setRating(4)">★★★★ Çok İyi</span>
+                                <span class="star-chip" onclick="setRating(5)">★★★★★ Mükemmel</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Rating" class="field-error">
+                        </span>
+                    </div>
+
+                    <!-- YORUM -->
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-chat-square-text"></i> Yorum <span class="req">*</span>
+                        </label>
+                        <div class="input-wrap textarea-wrap">
+                            <i class="bi bi-chat-square-dots i-icon"></i>
+                            <textarea asp-for="Comment" class="form-control"
+                                      placeholder="Ürün hakkındaki düşüncelerinizi paylaşın..."
+                                      rows="4" id="inpComment" oninput="updateSummary()"></textarea>
+                        </div>
+                        <span asp-validation-for="Comment" class="field-error">
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════ SAĞ KOLON ═══════════ -->
+        <div>
+
+            <!-- ONAY DURUMU -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:#f5f2ee;">
+                        <i class="bi bi-shield-check" style="color:#aaa;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Yayın Durumu</p>
+                        <p class="card-header-sub">Yorum sitede görünsün mü?</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <input asp-for="Status" type="hidden" id="hiddenStatus" value="true" />
+                    <div class="status-picker">
+                        <label class="status-option sel-active" id="opt-active" onclick="selectStatus(true)">
+                            <span class="so-dot" style="background:var(--green);"></span>
+                            <span class="so-label">Yayında</span>
+                            <i class="bi bi-check-circle-fill so-check" style="color:var(--green);"></i>
+                        </label>
+                        <label class="status-option" id="opt-passive" onclick="selectStatus(false)">
+                            <span class="so-dot" style="background:var(--red);"></span>
+                            <span class="so-label">Gizli</span>
+                            <i class="bi bi-check-circle-fill so-check" style="color:var(--red);"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÖZET -->
+            <div class="summary-card" style="margin-bottom:16px;">
+                <div class="summary-title">
+                    <i class="bi bi-receipt"></i> Değerlendirme Özeti
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Müşteri</div>
+                        <div class="sr-val" id="sumCustomer">—</div>
+                    </div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-basket3-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Ürün</div>
+                        <div class="sr-val" id="sumProduct">—</div>
+                    </div>
+                </div>
+
+                <hr class="summary-divider" />
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-star-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Puan</div>
+                        <div class="sr-val" id="sumStars">
+                            <span class="sum-stars empty">★★★★★</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-chat-square-text-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Yorum</div>
+                        <div class="sr-val" id="sumComment" style="font-style:italic;font-size:12px;line-height:1.5;">—</div>
+                    </div>
+                </div>
+
+                <hr class="summary-divider" />
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="sr-lbl">Durum</div>
+                        <div class="sr-val" id="sumStatus">Yayında</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-star-fill"></i>
+                    Değerlendirmeyi Kaydet
+                </button>
+
+                <a href="/Review/ReviewList/" class="btn-cancel-form">
+                    <i class="bi bi-x-lg"></i> Vazgeç
+                </a>
+            </div>
+
+            <!-- PUAN DAĞILIMI REHBERİ -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:rgba(245,158,11,0.10);">
+                        <i class="bi bi-bar-chart-fill" style="color:#f59e0b;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Puan Rehberi</p>
+                        <p class="card-header-sub">Ne anlama gelir?</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="rating-dist">
+                        <div class="rd-row">
+                            <span class="rd-label" style="color:var(--accent);">5</span>
+                            <div class="rd-bar-wrap"><div class="rd-bar" style="width:100%;"></div></div>
+                            <span class="rd-count" style="color:var(--accent);">Mükemmel</span>
+                        </div>
+                        <div class="rd-row">
+                            <span class="rd-label">4</span>
+                            <div class="rd-bar-wrap"><div class="rd-bar" style="width:80%;background:#22c55e;"></div></div>
+                            <span class="rd-count">Çok İyi</span>
+                        </div>
+                        <div class="rd-row">
+                            <span class="rd-label">3</span>
+                            <div class="rd-bar-wrap"><div class="rd-bar" style="width:60%;background:#3b82f6;"></div></div>
+                            <span class="rd-count">İyi</span>
+                        </div>
+                        <div class="rd-row">
+                            <span class="rd-label">2</span>
+                            <div class="rd-bar-wrap"><div class="rd-bar" style="width:40%;background:#f59e0b;"></div></div>
+                            <span class="rd-count">Orta</span>
+                        </div>
+                        <div class="rd-row">
+                            <span class="rd-label">1</span>
+                            <div class="rd-bar-wrap"><div class="rd-bar" style="width:20%;background:#ef4444;"></div></div>
+                            <span class="rd-count">Kötü</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        var currentRating = 0;
+
+        var starHints = {
+            1: '★ Kötü — Beklentileri karşılamadı.',
+            2: '★★ Orta — Geliştirilmesi gerekiyor.',
+            3: '★★★ İyi — Yeterli, ama daha iyi olabilir.',
+            4: '★★★★ Çok İyi — Memnun kaldım!',
+            5: '★★★★★ Mükemmel — Harika bir deneyim!'
+        };
+
+        /* ── STAR CHANGE ── */
+        function onStarChange(val) {
+            currentRating = val;
+            document.getElementById('starHint').textContent = starHints[val];
+
+            // Chip'leri güncelle
+            document.querySelectorAll('.star-chip').forEach(function(c, i) {
+                c.classList.toggle('active', i + 1 === val);
+            });
+
+            updateSummary();
+        }
+
+        function setRating(val) {
+            document.getElementById('s' + val).checked = true;
+            onStarChange(val);
+        }
+
+        /* ── STATUS ── */
+        function selectStatus(isActive) {
+            document.getElementById('hiddenStatus').value = isActive;
+            document.getElementById('opt-active').className = 'status-option' + (isActive ? ' sel-active' : '');
+            document.getElementById('opt-passive').className = 'status-option' + (!isActive ? ' sel-passive' : '');
+            updateSummary();
+        }
+
+        /* ── LIVE SUMMARY ── */
+        function updateSummary() {
+            // Müşteri
+            var customer = (document.getElementById('inpCustomer').value || '').trim();
+            document.getElementById('sumCustomer').textContent = customer || '—';
+
+            // Ürün
+            var productEl = document.getElementById('inpProduct');
+            var productText = productEl.options[productEl.selectedIndex]?.text || '—';
+            document.getElementById('sumProduct').textContent =
+                productEl.value ? productText : '—';
+
+            // Puan (yıldız)
+            var starsEl = document.getElementById('sumStars');
+            if (currentRating > 0) {
+                var filled = '★'.repeat(currentRating);
+                var empty = '★'.repeat(5 - currentRating);
+                starsEl.innerHTML =
+                    '<span class="sum-stars">' + filled + '</span>' +
+                    '<span class="sum-stars empty">' + empty + '</span>' +
+                    ' <span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:4px;">' + currentRating + '/5</span>';
+            } else {
+                starsEl.innerHTML = '<span class="sum-stars empty">★★★★★</span>';
+            }
+
+            // Yorum
+            var comment = (document.getElementById('inpComment').value || '').trim();
+            var sumComment = document.getElementById('sumComment');
+            if (comment) {
+                sumComment.textContent = comment.length > 60 ? comment.substring(0, 60) + '...' : comment;
+            } else {
+                sumComment.textContent = '—';
+            }
+
+            // Durum
+            var isActive = document.getElementById('hiddenStatus').value === 'true';
+            document.getElementById('sumStatus').textContent = isActive ? 'Yayında' : 'Gizli';
+        }
+
+        // Chip hover label
+        document.querySelectorAll('.star-chip').forEach(function(chip, i) {
+            chip.addEventListener('mouseenter', function() {
+                if (currentRating === 0) {
+                    document.getElementById('starHint').textContent = starHints[i + 1];
+                }
+            });
+            chip.addEventListener('mouseleave', function() {
+                document.getElementById('starHint').textContent =
+                    currentRating > 0 ? starHints[currentRating] : 'Bir puan seçin...';
+            });
+        });
+
+        // CreatedAt otomatik set
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSummary();
+        });
+    </script>
+}

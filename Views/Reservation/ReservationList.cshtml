@@ -1,0 +1,1438 @@
+﻿@model List<ResultReservationDto>
+
+
+@{
+    ViewData["Title"] = "ReservationList";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+
+    var total = Model?.Count ?? 0;
+    var pending = Model?.Count(x => x.Status == "Beklemede" || x.Status == "Beklemede") ?? 0;
+    var approved = Model?.Count(x => x.Status == "Onaylandı" || x.Status == "Onaylandi") ?? 0;
+    var cancelled = Model?.Count(x => x.Status == "İptal Edildi" || x.Status == "Iptal Edildi") ?? 0;
+    var today = Model?.Count(r => r.ReservationDate.Date == DateTime.Today) ?? 0;
+}
+
+<style>
+    :root {
+        --accent: #e6a03c;
+        --accent-dark: #c8861e;
+        --accent-soft: rgba(230,160,60,0.10);
+        --green: #22c55e;
+        --green-soft: rgba(34,197,94,0.10);
+        --red: #ef4444;
+        --red-soft: rgba(239,68,68,0.10);
+        --blue: #3b82f6;
+        --blue-soft: rgba(59,130,246,0.10);
+        --yellow: #f59e0b;
+        --yellow-soft: rgba(245,158,11,0.10);
+        --border: #eeebe5;
+        --text: #1a1a1a;
+        --text2: #6b6460;
+        --muted: #9a9590;
+        --radius: 14px;
+        --radius-sm: 9px;
+        --tr: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        animation: fadeDown 0.4s ease both;
+    }
+
+    .pg-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .pg-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 11px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+        box-shadow: 0 4px 14px rgba(230,160,60,0.28);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(230,160,60,0.38);
+            color: #fff;
+        }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+        animation: fadeUp 0.4s 0.05s ease both;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: var(--tr);
+    }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+        }
+
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .stat-num {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 3px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        animation: fadeUp 0.4s 0.1s ease both;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+        max-width: 320px;
+    }
+
+        .search-wrap .si {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: var(--text);
+        outline: none;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+        }
+
+    .f-select {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .f-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+        }
+
+    .toolbar-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-count {
+        font-size: 12.5px;
+        color: var(--muted);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* ── TABLE CARD ── */
+    .tbl-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+        animation: fadeUp 0.4s 0.12s ease both;
+    }
+
+    /* ── TABLE ── */
+    .res-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+        .res-table thead tr {
+            background: #fafaf8;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .res-table thead th {
+            padding: 12px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #aaa;
+            text-align: left;
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+        }
+
+            .res-table thead th:hover {
+                color: var(--accent-dark);
+            }
+
+            .res-table thead th.no-sort {
+                cursor: default;
+            }
+
+                .res-table thead th.no-sort:hover {
+                    color: #aaa;
+                }
+
+            .res-table thead th .sort-icon {
+                margin-left: 4px;
+                font-size: 9px;
+                opacity: 0.4;
+            }
+
+            .res-table thead th.sorted .sort-icon {
+                opacity: 1;
+                color: var(--accent-dark);
+            }
+
+    /* Col widths */
+    .col-num {
+        width: 44px;
+        text-align: center !important;
+    }
+
+    .col-name {
+        min-width: 160px;
+    }
+
+    .col-date {
+        width: 120px;
+    }
+
+    .col-time {
+        width: 90px;
+    }
+
+    .col-guest {
+        width: 80px;
+        text-align: center !important;
+    }
+
+    .col-phone {
+        width: 140px;
+    }
+
+    .col-stat {
+        width: 130px;
+    }
+
+    .col-note {
+        min-width: 140px;
+    }
+
+    .col-act {
+        width: 100px;
+        text-align: center !important;
+    }
+
+    .res-table tbody tr {
+        border-bottom: 1px solid #f5f2ee;
+        transition: background 0.15s;
+    }
+
+        .res-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .res-table tbody tr:hover {
+            background: #fdfcfa;
+        }
+
+    .res-table tbody td {
+        padding: 13px 14px;
+        vertical-align: middle;
+        font-size: 13.5px;
+        color: var(--text);
+    }
+
+        .res-table tbody td.col-num {
+            text-align: center;
+        }
+
+        .res-table tbody td.col-guest {
+            text-align: center;
+        }
+
+        .res-table tbody td.col-act {
+            text-align: center;
+        }
+
+    /* Row num */
+    .row-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        background: #f5f2ee;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #aaa;
+    }
+
+    /* Guest badge */
+    .guest-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: var(--blue-soft);
+        color: var(--blue);
+        border: 1px solid rgba(59,130,246,0.18);
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* Date / Time */
+    .date-cell {
+        font-weight: 700;
+        color: var(--text);
+        font-size: 13px;
+    }
+
+    .date-sub {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    .time-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 600;
+        color: var(--text2);
+        font-size: 13px;
+    }
+
+    /* Contact */
+    .contact-name {
+        font-weight: 700;
+        font-size: 13.5px;
+        color: var(--text);
+    }
+
+    .contact-email {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    /* Phone */
+    .phone-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: var(--tr);
+    }
+
+        .phone-link:hover {
+            color: var(--accent-dark);
+        }
+
+    /* Note */
+    .note-text {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px;
+        font-style: italic;
+    }
+
+    .note-empty {
+        font-size: 11.5px;
+        color: #d5d0cc;
+    }
+
+    /* ── STATUS BADGES ── */
+    .s-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 11px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .s-badge.beklemede {
+            background: var(--yellow-soft);
+            color: #b45309;
+            border: 1px solid rgba(245,158,11,0.25);
+        }
+
+        .s-badge.onaylandi {
+            background: var(--green-soft);
+            color: #16a34a;
+            border: 1px solid rgba(34,197,94,0.22);
+        }
+
+        .s-badge.iptal {
+            background: var(--red-soft);
+            color: #dc2626;
+            border: 1px solid rgba(239,68,68,0.22);
+        }
+
+        .s-badge.other {
+            background: #f5f2ee;
+            color: #888;
+            border: 1px solid var(--border);
+        }
+
+    .s-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .s-badge.beklemede .s-dot {
+        background: var(--yellow);
+        animation: pulse-y 2s infinite;
+    }
+
+    .s-badge.onaylandi .s-dot {
+        background: var(--green);
+        animation: pulse 2s infinite;
+    }
+
+    .s-badge.iptal .s-dot {
+        background: var(--red);
+    }
+
+    .s-badge.other .s-dot {
+        background: #ccc;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .act-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .btn-act {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+        position: relative;
+    }
+
+        .btn-act.approve {
+            background: var(--green-soft);
+            color: #16a34a;
+            border-color: rgba(34,197,94,0.22);
+        }
+
+            .btn-act.approve:hover {
+                background: var(--green);
+                color: #fff;
+                border-color: var(--green);
+                transform: scale(1.1);
+                box-shadow: 0 3px 10px rgba(34,197,94,0.32);
+            }
+
+        .btn-act.pending {
+            background: var(--yellow-soft);
+            color: #b45309;
+            border-color: rgba(245,158,11,0.22);
+        }
+
+            .btn-act.pending:hover {
+                background: var(--yellow);
+                color: #fff;
+                border-color: var(--yellow);
+                transform: scale(1.1);
+                box-shadow: 0 3px 10px rgba(245,158,11,0.32);
+            }
+
+        .btn-act.cancel {
+            background: #fff7ed;
+            color: #ea580c;
+            border-color: #fed7aa;
+        }
+
+            .btn-act.cancel:hover {
+                background: #ea580c;
+                color: #fff;
+                border-color: #ea580c;
+                transform: scale(1.1);
+                box-shadow: 0 3px 10px rgba(234,88,12,0.32);
+            }
+
+        .btn-act.edit {
+            background: #fff7ed;
+            color: var(--accent-dark);
+            border-color: #fde8c0;
+        }
+
+            .btn-act.edit:hover {
+                background: var(--accent);
+                color: #fff;
+                border-color: var(--accent);
+                transform: scale(1.1);
+                box-shadow: 0 3px 10px rgba(230,160,60,0.38);
+            }
+
+        .btn-act.del {
+            background: #fff5f5;
+            color: var(--red);
+            border-color: #fecaca;
+        }
+
+            .btn-act.del:hover {
+                background: var(--red);
+                color: #fff;
+                border-color: var(--red);
+                transform: scale(1.1);
+                box-shadow: 0 3px 10px rgba(239,68,68,0.32);
+            }
+
+        .btn-act::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.85);
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 500;
+            white-space: nowrap;
+            padding: 3px 8px;
+            border-radius: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.14s;
+        }
+
+        .btn-act:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+    /* ── TABLE FOOTER ── */
+    .tbl-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 18px;
+        border-top: 1px solid var(--border);
+        background: #fafaf8;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tf-info {
+        font-size: 12.5px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+        .tf-info strong {
+            color: #555;
+        }
+
+    .tf-per {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--muted);
+    }
+
+    .per-select {
+        padding: 5px 10px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .pag {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pag-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12.5px;
+        cursor: pointer;
+        color: #555;
+        transition: var(--tr);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .pag-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+        }
+
+        .pag-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(230,160,60,0.35);
+        }
+
+        .pag-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    .pag-ellipsis {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        color: #bbb;
+        font-size: 13px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-row td {
+        padding: 64px 24px !important;
+        text-align: center !important;
+    }
+
+    .empty-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .empty-ico {
+        width: 68px;
+        height: 68px;
+        background: linear-gradient(135deg,#f9f7f4,#ede8df);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: #ccc;
+        margin-bottom: 16px;
+        border: 2px dashed #e0d9ce;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .empty-sub {
+        font-size: 13px;
+        color: #bbb;
+        margin-bottom: 18px;
+    }
+
+    /* ── DELETE MODAL ── */
+    .del-mc {
+        border-radius: 18px !important;
+        border: 1px solid #f0ede8 !important;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.13) !important;
+    }
+
+    .del-mb {
+        padding: 34px 28px 20px;
+        text-align: center;
+    }
+
+    .del-mt {
+        font-family: 'Playfair Display', serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 7px;
+    }
+
+    .del-mf {
+        padding: 0 28px 26px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-cancel-m {
+        flex: 1;
+        border-radius: 10px;
+        border: 1px solid #ebebeb;
+        background: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #555;
+        padding: 11px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-cancel-m:hover {
+            background: #f7f5f2;
+        }
+
+    .btn-del-ok {
+        flex: 1;
+        border-radius: 10px;
+        background: var(--red);
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 11px;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        box-shadow: 0 4px 14px rgba(239,68,68,0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: var(--tr);
+    }
+
+        .btn-del-ok:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+
+    /* ── STATUS CHANGE DROPDOWN ── */
+    .status-select {
+        padding: 4px 10px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        outline: none;
+        font-family: 'DM Sans', sans-serif;
+        transition: var(--tr);
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 24px;
+    }
+
+        .status-select.beklemede {
+            background-color: var(--yellow-soft);
+            color: #b45309;
+            border-color: rgba(245,158,11,0.25);
+        }
+
+        .status-select.onaylandi {
+            background-color: var(--green-soft);
+            color: #16a34a;
+            border-color: rgba(34,197,94,0.22);
+        }
+
+        .status-select.iptal {
+            background-color: var(--red-soft);
+            color: #dc2626;
+            border-color: rgba(239,68,68,0.22);
+        }
+
+    /* ── ANIMATIONS ── */
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 2px rgba(34,197,94,.25);
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(34,197,94,.08);
+        }
+    }
+
+    @@keyframes pulse-y {
+        0%, 100% {
+            box-shadow: 0 0 0 2px rgba(245,158,11,.25);
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(245,158,11,.08);
+        }
+    }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width:1199.98px) {
+        .stat-grid {
+            grid-template-columns: repeat(3,1fr);
+        }
+    }
+
+    @@media (max-width:991.98px) {
+        .col-note, .col-phone {
+            display: none;
+        }
+    }
+
+    @@media (max-width:767.98px) {
+        .stat-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .col-num {
+            display: none;
+        }
+
+        .result-count {
+            display: none;
+        }
+    }
+</style>
+
+<!-- ── PAGE HEADER ── -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title">
+            <i class="bi bi-calendar2-check-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>
+            Rezervasyon Yönetimi
+        </h1>
+        <p class="pg-desc">Tüm rezervasyonları görüntüleyin ve yönetin.</p>
+    </div>
+    <a href="/Reservation/CreateReservation/" class="btn-add">
+        <i class="bi bi-plus-lg"></i>
+        Yeni Rezervasyon
+    </a>
+</div>
+
+<!-- ── STAT CARDS ── -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#f5f2ee;">
+            <i class="bi bi-calendar2-week-fill" style="color:#aaa;"></i>
+        </div>
+        <div>
+            <div class="stat-num">@total</div>
+            <div class="stat-lbl">Toplam</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--yellow-soft);">
+            <i class="bi bi-hourglass-split" style="color:var(--yellow);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:#b45309;">@pending</div>
+            <div class="stat-lbl">Beklemede</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-soft);">
+            <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:#16a34a;">@approved</div>
+            <div class="stat-lbl">Onaylandı</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--red-soft);">
+            <i class="bi bi-x-circle-fill" style="color:var(--red);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:#dc2626;">@cancelled</div>
+            <div class="stat-lbl">İptal Edildi</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--accent-soft);">
+            <i class="bi bi-calendar-day-fill" style="color:var(--accent-dark);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:var(--accent-dark);">@today</div>
+            <div class="stat-lbl">Bugünkü</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+    <div class="search-wrap">
+        <i class="bi bi-search si"></i>
+        <input type="text" class="search-input" id="searchInput"
+               placeholder="Ad, telefon veya e-posta ara..."
+               oninput="filterTable()" />
+    </div>
+
+    <select class="f-select" id="statusFilter" onchange="filterTable()">
+        <option value="all">Tüm Durumlar</option>
+        <option value="beklemede">Beklemede</option>
+        <option value="onaylandi">Onaylandı</option>
+        <option value="iptal">İptal Edildi</option>
+    </select>
+
+    <select class="f-select" id="dateFilter" onchange="filterTable()">
+        <option value="all">Tüm Tarihler</option>
+        <option value="today">Bugün</option>
+        <option value="upcoming">Yaklaşan</option>
+        <option value="past">Geçmiş</option>
+    </select>
+
+    <select class="f-select" id="sortSelect" onchange="sortTable()">
+        <option value="default">Sıralama</option>
+        <option value="date-asc">Tarih ↑</option>
+        <option value="date-desc">Tarih ↓</option>
+        <option value="name-asc">Ad A→Z</option>
+        <option value="name-desc">Ad Z→A</option>
+        <option value="guest-asc">Kişi Sayısı ↑</option>
+        <option value="guest-desc">Kişi Sayısı ↓</option>
+    </select>
+
+    <div class="toolbar-right">
+        <span class="result-count" id="resultCount">@total rezervasyon</span>
+    </div>
+</div>
+
+<!-- ── TABLE CARD ── -->
+<div class="tbl-card">
+    <div style="overflow-x:auto;">
+        <table class="res-table" id="resTable">
+            <thead>
+                <tr>
+                    <th class="col-num no-sort">#</th>
+                    <th class="col-name" onclick="sortBy('name')">Ad Soyad <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-phone no-sort">Telefon</th>
+                    <th class="col-date" onclick="sortBy('date')">Tarih <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-time no-sort">Saat</th>
+                    <th class="col-guest" onclick="sortBy('guest')">Kişi <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-stat no-sort">Durum</th>
+                    <th class="col-note no-sort">Not</th>
+                    <th class="col-act no-sort">İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="resBody">
+
+                @if (Model == null || !Model.Any())
+                {
+                    <tr class="empty-row">
+                        <td colspan="9">
+                            <div class="empty-inner">
+                                <div class="empty-ico"><i class="bi bi-calendar2-x"></i></div>
+                                <div class="empty-title">Henüz rezervasyon yok</div>
+                                <p class="empty-sub">İlk rezervasyonu ekleyin.</p>
+                                <a href="/Reservation/CreateReservation/" class="btn-add" style="display:inline-flex;">
+                                    <i class="bi bi-plus-lg"></i> Yeni Rezervasyon
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var r = Model[i];
+
+                        // CSS Rozet Sınıfı
+                        var statusClass = r.Status switch
+                        {
+                            "Onaylandı" or "Onaylandi" => "onaylandi",
+                            "İptal Edildi" or "Iptal Edildi" => "iptal",
+                            _ => "beklemede"
+                        };
+
+                        // Ekranda Görünecek Temiz Metin
+                        var statusText = r.Status switch
+                        {
+                            "Onaylandı" or "Onaylandi" => "Onaylandı",
+                            "İptal Edildi" or "Iptal Edildi" => "İptal Edildi",
+                            _ => "Beklemede"
+                        };
+
+                        // Tarih bilgisi
+                        var dateStr = r.ReservationDate.ToString("dd MMM yyyy");
+                        var dayName = r.ReservationDate.ToString("dddd");
+                        var timeStr = r.ReservationTime.ToString(@"hh\:mm");
+                        var isToday = r.ReservationDate.Date == DateTime.Today;
+                        var isPast = r.ReservationDate.Date < DateTime.Today;
+                        var dateGroup = isToday ? "today" : isPast ? "past" : "upcoming";
+
+                        <tr data-name="@r.Name.ToLower()"
+                            data-phone="@r.Phone"
+                            data-email="@(r.Email?.ToLower() ?? "")"
+                            data-status="@statusClass"
+                            data-date="@r.ReservationDate.ToString("yyyy-MM-dd")"
+                            data-dategroup="@dateGroup"
+                            data-guest="@r.GuestCount">
+                            <td class="col-num">
+                                <span class="row-num">@(i + 1)</span>
+                            </td>
+                            <td class="col-name">
+                                <div class="contact-name">@r.Name</div>
+                                @if (!string.IsNullOrWhiteSpace(r.Email))
+                                {
+                                    <div class="contact-email">@r.Email</div>
+                                }
+                            </td>
+                            <td class="col-phone">
+                                <a href="tel:@r.Phone" class="phone-link">
+                                    <i class="bi bi-telephone-fill" style="font-size:11px;color:var(--accent);"></i>
+                                    @r.Phone
+                                </a>
+                            </td>
+                            <td class="col-date">
+                                <div class="date-cell">
+                                    @if (isToday)
+                                    {
+                                        <span style="color:var(--accent-dark);">Bugün</span>
+                                    }
+                                    else
+                                    {
+                                        @dateStr
+                                    }
+                                </div>
+                                <div class="date-sub">@dayName</div>
+                            </td>
+                            <td class="col-time">
+                                <span class="time-cell">
+                                    <i class="bi bi-clock" style="font-size:11px;color:var(--accent);"></i>
+                                    @timeStr
+                                </span>
+                            </td>
+                            <td class="col-guest">
+                                <span class="guest-badge">
+                                    <i class="bi bi-people-fill" style="font-size:10px;"></i>
+                                    @r.GuestCount
+                                </span>
+                            </td>
+                            <td class="col-stat">
+                                <span class="s-badge @statusClass">
+                                    <span class="s-dot"></span>
+                                    @r.Status
+                                </span>
+                            </td>
+                            <td class="col-note">
+                                @if (!string.IsNullOrWhiteSpace(r.Description))
+                                {
+                                    <span class="note-text" title="@r.Description">@r.Description</span>
+                                }
+                                else
+                                {
+                                    <span class="note-empty">—</span>
+                                }
+                            </td>
+                            <td class="col-act">
+                                <div class="act-group">
+                                    <a href="/Reservation/UpdateReservation/@r.ReservationId"
+                                       class="btn-act edit" data-tip="Düzenle">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+
+                                    <a href="/Reservation/ApproveReservation/@r.ReservationId"
+                                       class="btn-act approve" data-tip="Onayla">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+
+                                    <a href="/Reservation/PendingReservation/@r.ReservationId"
+                                       class="btn-act pending" data-tip="Beklet">
+                                        <i class="bi bi-hourglass-split"></i>
+                                    </a>
+
+                                    <a href="/Reservation/CancelReservation/@r.ReservationId"
+                                       class="btn-act cancel" data-tip="İptal Et">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+
+                                    <button class="btn-act del" data-tip="Sil"
+                                            onclick="confirmDelete(@r.ReservationId, '@r.Name')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TABLE FOOTER -->
+    <div class="tbl-footer">
+        <div class="tf-info">
+            Toplam <strong id="visibleCount">@total</strong> rezervasyon gösteriliyor
+        </div>
+        <div class="tf-per">
+            <span>Sayfa başına:</span>
+            <select class="per-select" id="perPage" onchange="renderPagination()">
+                <option value="25">25</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="9999">Tümü</option>
+            </select>
+        </div>
+        <div class="pag" id="pagination"></div>
+    </div>
+</div>
+
+<!-- ── DELETE MODAL ── -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content del-mc">
+            <div class="del-mb">
+                <div style="width:62px;height:62px;background:#fff5f5;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 16px;font-size:24px;color:#ef4444;border:1.5px solid #fecaca;">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                <div class="del-mt">Rezervasyon Silinsin mi?</div>
+                <p style="font-size:13.5px;color:#888;margin-bottom:4px;">
+                    <strong id="delResName" style="color:#333;"></strong> adına kayıtlı rezervasyon kalıcı olarak silinecek.
+                </p>
+                <p style="font-size:12px;color:#ccc;margin-bottom:0;">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="del-mf">
+                <button class="btn-cancel-m" data-bs-dismiss="modal">Vazgeç</button>
+                <a id="delLink" href="#" class="btn-del-ok">
+                    <i class="bi bi-trash3-fill"></i> Evet, Sil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        /* ─── STATE ─────────────────────────────────────── */
+        var allRows  = [];
+        var filtered = [];
+        var curPage  = 1;
+        var sortField = null;
+        var sortDir   = 'asc';
+
+        /* ─── INIT ──────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', function () {
+            allRows  = Array.from(document.querySelectorAll('#resBody tr[data-name]'));
+            
+            // Tarih grubunu (Bugün, Yaklaşan, Geçmiş) istemci tarafında dinamik hesapla
+            var todayStr = new Date().toISOString().split('T')[0];
+            allRows.forEach(function (row) {
+                var rowDate = row.dataset.date;
+                if (rowDate === todayStr) {
+                    row.dataset.dategroup = 'today';
+                } else if (rowDate > todayStr) {
+                    row.dataset.dategroup = 'upcoming';
+                } else {
+                    row.dataset.dategroup = 'past';
+                }
+            });
+
+            filtered = allRows.slice();
+            renderPagination();
+            showPage(1);
+        });
+
+        /* ─── FILTER ────────────────────────────────────── */
+        function filterTable() {
+            var q      = document.getElementById('searchInput').value.toLocaleLowerCase('tr').trim();
+            var status = document.getElementById('statusFilter').value;
+            var date   = document.getElementById('dateFilter').value;
+
+            filtered = allRows.filter(function (row) {
+                var nm = (row.dataset.name  || '').toLocaleLowerCase('tr').includes(q) ||
+                         (row.dataset.phone || '').includes(q) ||
+                         (row.dataset.email || '').toLocaleLowerCase('tr').includes(q);
+                var sm = status === 'all' || row.dataset.status    === status;
+                var dm = date   === 'all' || row.dataset.dategroup === date;
+                return nm && sm && dm;
+            });
+
+            if (sortField) applySortToFiltered();
+            curPage = 1;
+            renderPagination();
+            showPage(1);
+            updateCounts();
+        }
+
+        /* ─── SORT ──────────────────────────────────────── */
+        function sortBy(field) {
+            if (sortField === field) { 
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc'; 
+            } else { 
+                sortField = field; 
+                sortDir = 'asc'; 
+            }
+
+            document.querySelectorAll('.res-table thead th').forEach(function (th) {
+                th.classList.remove('sorted');
+                var ico = th.querySelector('.sort-icon');
+                if (ico) ico.className = 'bi bi-chevron-expand sort-icon';
+            });
+
+            var colMap = { name: 1, date: 3, guest: 5 };
+            var idx = colMap[field];
+            var th  = document.querySelectorAll('.res-table thead th')[idx];
+            if (th) {
+                th.classList.add('sorted');
+                var ico = th.querySelector('.sort-icon');
+                if (ico) ico.className = 'bi bi-chevron-' + (sortDir === 'asc' ? 'up' : 'down') + ' sort-icon';
+            }
+
+            applySortToFiltered();
+            curPage = 1; 
+            renderPagination(); 
+            showPage(1);
+        }
+
+        function sortTable() {
+            var val = document.getElementById('sortSelect').value;
+            if (val === 'default') { 
+                sortField = null; 
+                filterTable(); 
+                return; 
+            }
+            var parts = val.split('-');
+            sortField = parts[0]; 
+            sortDir = parts[1];
+            applySortToFiltered();
+            curPage = 1; 
+            renderPagination(); 
+            showPage(1);
+        }
+
+        function applySortToFiltered() {
+            filtered.sort(function (a, b) {
+                if (sortField === 'name') {
+                    var av = a.dataset.name || '', bv = b.dataset.name || '';
+                    return sortDir === 'asc' ? av.localeCompare(bv, 'tr') : bv.localeCompare(av, 'tr');
+                }
+                if (sortField === 'date') {
+                    var av = a.dataset.date || '', bv = b.dataset.date || '';
+                    return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+                }
+                if (sortField === 'guest') {
+                    var av = parseInt(a.dataset.guest) || 0, bv = parseInt(b.dataset.guest) || 0;
+                    return sortDir === 'asc' ? av - bv : bv - av;
+                }
+                return 0;
+            });
+        }
+
+        /* ─── PAGINATION & RENDER ───────────────────────── */
+        function renderPagination() {
+            var per   = parseInt(document.getElementById('perPage').value);
+            var pages = per >= 9999 ? 1 : Math.ceil(filtered.length / per);
+            var pag   = document.getElementById('pagination');
+            if (!pag) return;
+            if (pages <= 1) { pag.innerHTML = ''; return; }
+
+            var html = '';
+            html += '<button class="pag-btn" ' + (curPage <= 1 ? 'disabled' : '') + ' onclick="goPage(' + (curPage - 1) + ')"><i class="bi bi-chevron-left"></i></button>';
+            for (var i = 1; i <= pages; i++) {
+                if (pages > 7 && i > 2 && i < pages - 1 && Math.abs(i - curPage) > 1) {
+                    if (i === 3 || i === pages - 2) html += '<span class="pag-ellipsis">…</span>';
+                    continue;
+                }
+                html += '<button class="pag-btn ' + (i === curPage ? 'active' : '') + '" onclick="goPage(' + i + ')">' + i + '</button>';
+            }
+            html += '<button class="pag-btn" ' + (curPage >= pages ? 'disabled' : '') + ' onclick="goPage(' + (curPage + 1) + ')"><i class="bi bi-chevron-right"></i></button>';
+            pag.innerHTML = html;
+        }
+
+        function goPage(n) {
+            curPage = n; 
+            showPage(n); 
+            renderPagination();
+            document.querySelector('.tbl-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showPage(n) {
+            var per   = parseInt(document.getElementById('perPage').value);
+            var start = per >= 9999 ? 0 : (n - 1) * per;
+            var end   = per >= 9999 ? filtered.length : start + per;
+            var body  = document.getElementById('resBody');
+
+            // 1. Sıralanan elemanları DOM'da fiziksel olarak yeniden sırala
+            filtered.forEach(function (r) {
+                body.appendChild(r);
+            });
+
+            // 2. Tüm satırları gizle, sadece mevcut sayfadakileri göster
+            allRows.forEach(function (r) { r.style.display = 'none'; });
+            filtered.forEach(function (r, i) {
+                if (i >= start && i < end) {
+                    r.style.display = '';
+                    var chip = r.querySelector('.row-num');
+                    if (chip) chip.textContent = i + 1;
+                }
+            });
+
+            // 3. Boş durum kontrolü
+            var emptyRow = document.querySelector('.empty-row');
+            if (emptyRow) emptyRow.style.display = filtered.length === 0 ? '' : 'none';
+            if (filtered.length === 0 && !emptyRow) {
+                var tr = document.createElement('tr');
+                tr.className = 'empty-row temp-empty';
+                tr.innerHTML = '<td colspan="9"><div class="empty-inner"><div class="empty-ico"><i class="bi bi-search"></i></div><div class="empty-title">Sonuç bulunamadı</div><p class="empty-sub">Filtre veya arama kriterlerinizi değiştirin.</p></div></td>';
+                var existing = body.querySelector('.temp-empty');
+                if (existing) existing.remove();
+                body.appendChild(tr);
+            } else {
+                var te = document.querySelector('.temp-empty');
+                if (te) te.remove();
+            }
+        }
+
+        function updateCounts() {
+            var vc = document.getElementById('visibleCount');
+            if (vc) vc.textContent = filtered.length;
+            var rc = document.getElementById('resultCount');
+            if (rc) rc.textContent = filtered.length + ' rezervasyon';
+        }
+
+        /* ─── DELETE ─────────────────────────────────────── */
+        function confirmDelete(id, name) {
+            document.getElementById('delResName').textContent = name;
+            document.getElementById('delLink').href = '/Reservation/DeleteReservation/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

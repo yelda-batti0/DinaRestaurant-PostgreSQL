@@ -1,0 +1,1312 @@
+﻿@model List<ResultReviewDto>
+
+@{
+    ViewData["Title"] = "ReviewList";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+
+    var total = Model?.Count ?? 0;
+    var active = Model?.Count(r => r.Status) ?? 0;
+    var passive = total - active;
+    var avgRating = Model?.Any() == true ? Model.Average(r => r.Rating) : 0;
+    var fiveStar = Model?.Count(r => r.Rating == 5) ?? 0;
+}
+
+<style>
+    :root {
+        --accent: #e6a03c;
+        --accent-dark: #c8861e;
+        --accent-soft: rgba(230,160,60,0.10);
+        --green: #22c55e;
+        --green-soft: rgba(34,197,94,0.10);
+        --red: #ef4444;
+        --red-soft: rgba(239,68,68,0.10);
+        --blue: #3b82f6;
+        --blue-soft: rgba(59,130,246,0.10);
+        --yellow: #f59e0b;
+        --yellow-soft: rgba(245,158,11,0.10);
+        --border: #eeebe5;
+        --text: #1a1a1a;
+        --muted: #9a9590;
+        --radius: 14px;
+        --radius-sm: 10px;
+        --tr: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        animation: fadeDown 0.4s ease both;
+    }
+
+    .pg-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .pg-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 11px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+        box-shadow: 0 4px 14px rgba(230,160,60,0.28);
+        white-space: nowrap;
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(230,160,60,0.38);
+            color: #fff;
+        }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4,1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+        animation: fadeUp 0.4s 0.05s ease both;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: var(--tr);
+    }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+        }
+
+    .stat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+        flex-shrink: 0;
+    }
+
+    .stat-num {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .stat-lbl {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+        animation: fadeUp 0.4s 0.1s ease both;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 220px;
+        max-width: 320px;
+    }
+
+        .search-wrap .si {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: var(--text);
+        outline: none;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+        }
+
+    .f-select {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .f-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.12);
+        }
+
+    .toolbar-right {
+        margin-left: auto;
+    }
+
+    .result-count {
+        font-size: 12.5px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    /* ── TABLE CARD ── */
+    .tbl-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+        animation: fadeUp 0.4s 0.12s ease both;
+    }
+
+    /* ── TABLE ── */
+    .rev-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+        .rev-table thead tr {
+            background: #fafaf8;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .rev-table thead th {
+            padding: 12px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #aaa;
+            text-align: left;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+            .rev-table thead th:hover {
+                color: var(--accent-dark);
+            }
+
+            .rev-table thead th.no-sort {
+                cursor: default;
+            }
+
+                .rev-table thead th.no-sort:hover {
+                    color: #aaa;
+                }
+
+            .rev-table thead th .sort-icon {
+                margin-left: 4px;
+                font-size: 9px;
+                opacity: 0.4;
+            }
+
+            .rev-table thead th.sorted .sort-icon {
+                opacity: 1;
+                color: var(--accent-dark);
+            }
+
+    .col-num {
+        width: 44px;
+        text-align: center !important;
+    }
+
+    .col-customer {
+        min-width: 150px;
+    }
+
+    .col-product {
+        min-width: 160px;
+    }
+
+    .col-rating {
+        width: 130px;
+    }
+
+    .col-comment {
+        min-width: 200px;
+    }
+
+    .col-date {
+        width: 120px;
+    }
+
+    .col-status {
+        width: 100px;
+    }
+
+    .col-act {
+        width: 100px;
+        text-align: center !important;
+    }
+
+    .rev-table tbody tr {
+        border-bottom: 1px solid #f5f2ee;
+        transition: background 0.15s;
+    }
+
+        .rev-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .rev-table tbody tr:hover {
+            background: #fdfcfa;
+        }
+
+    .rev-table tbody td {
+        padding: 13px 14px;
+        vertical-align: middle;
+        font-size: 13.5px;
+        color: var(--text);
+    }
+
+        .rev-table tbody td.col-num {
+            text-align: center;
+        }
+
+        .rev-table tbody td.col-act {
+            text-align: center;
+        }
+
+    /* Row num */
+    .row-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        background: #f5f2ee;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #aaa;
+    }
+
+    /* Avatar */
+    .customer-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 800;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .customer-name {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    /* Product badge */
+    .product-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--accent-soft);
+        color: var(--accent-dark);
+        border: 1px solid #fde8c0;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 600;
+        white-space: nowrap;
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Star rating display */
+    .star-display {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stars-filled {
+        color: var(--accent);
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+
+    .stars-empty {
+        color: #e0dbd4;
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+
+    .rating-num {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2, #6b6460);
+    }
+
+    /* Comment */
+    .comment-text {
+        font-size: 12.5px;
+        color: #555;
+        font-style: italic;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 240px;
+        line-height: 1.5;
+    }
+
+    /* Date */
+    .date-cell {
+        font-size: 12.5px;
+        color: var(--muted);
+    }
+
+    /* Status badge */
+    .s-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 700;
+    }
+
+    .s-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .sb-active {
+        background: var(--green-soft);
+        color: #16a34a;
+        border: 1px solid rgba(34,197,94,0.2);
+    }
+
+        .sb-active .s-dot {
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+    .sb-passive {
+        background: var(--red-soft);
+        color: #dc2626;
+        border: 1px solid rgba(239,68,68,0.2);
+    }
+
+        .sb-passive .s-dot {
+            background: var(--red);
+        }
+
+    /* Action buttons */
+    .act-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .btn-act {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        font-size: 13px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+        position: relative;
+    }
+
+        .btn-act::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.85);
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 10.5px;
+            white-space: nowrap;
+            padding: 3px 8px;
+            border-radius: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.14s;
+        }
+
+        .btn-act:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .btn-act.edit {
+            background: #fff7ed;
+            color: var(--accent-dark);
+            border-color: #fde8c0;
+        }
+
+            .btn-act.edit:hover {
+                background: var(--accent);
+                color: #fff;
+                border-color: var(--accent);
+                transform: scale(1.1);
+            }
+
+        .btn-act.del {
+            background: var(--red-soft);
+            color: var(--red);
+            border-color: rgba(239,68,68,0.2);
+        }
+
+            .btn-act.del:hover {
+                background: var(--red);
+                color: #fff;
+                border-color: var(--red);
+                transform: scale(1.1);
+            }
+
+        .btn-act.toggle-on {
+            background: var(--green-soft);
+            color: #16a34a;
+            border-color: rgba(34,197,94,0.2);
+        }
+
+            .btn-act.toggle-on:hover {
+                background: var(--green);
+                color: #fff;
+                transform: scale(1.1);
+            }
+
+        .btn-act.toggle-off {
+            background: var(--yellow-soft);
+            color: #b45309;
+            border-color: rgba(245,158,11,0.2);
+        }
+
+            .btn-act.toggle-off:hover {
+                background: var(--yellow);
+                color: #fff;
+                transform: scale(1.1);
+            }
+
+    /* ── RATING OVERVIEW HEADER ── */
+    .rating-overview {
+        background: linear-gradient(135deg, #1a1a1a, #2d2a26);
+        border-radius: var(--radius);
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        animation: fadeUp 0.4s 0.03s ease both;
+    }
+
+    .ro-score {
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .ro-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+    }
+
+    .ro-stars {
+        color: var(--accent);
+        font-size: 18px;
+        letter-spacing: 2px;
+        margin: 4px 0;
+    }
+
+    .ro-total {
+        font-size: 12px;
+        color: rgba(255,255,255,0.4);
+    }
+
+    .ro-divider {
+        width: 1px;
+        height: 64px;
+        background: rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+
+    .ro-bars {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 200px;
+    }
+
+    .ro-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .ro-bar-label {
+        color: rgba(255,255,255,0.5);
+        width: 12px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .ro-bar-wrap {
+        flex: 1;
+        background: rgba(255,255,255,0.08);
+        border-radius: 6px;
+        height: 6px;
+        overflow: hidden;
+    }
+
+    .ro-bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        background: var(--accent);
+        transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .ro-bar-count {
+        color: rgba(255,255,255,0.35);
+        width: 20px;
+        text-align: right;
+        flex-shrink: 0;
+        font-size: 11px;
+    }
+
+    .ro-stats {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .ro-stat {
+        text-align: center;
+    }
+
+    .ro-stat-num {
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .ro-stat-lbl {
+        font-size: 11px;
+        color: rgba(255,255,255,0.35);
+    }
+
+    /* ── TABLE FOOTER ── */
+    .tbl-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 18px;
+        border-top: 1px solid var(--border);
+        background: #fafaf8;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .tf-info {
+        font-size: 12.5px;
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+        .tf-info strong {
+            color: #555;
+        }
+
+    .pag {
+        display: flex;
+        gap: 4px;
+    }
+
+    .pag-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12.5px;
+        cursor: pointer;
+        color: #555;
+        transition: var(--tr);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+    }
+
+        .pag-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+        }
+
+        .pag-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .pag-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    /* ── EMPTY ── */
+    .empty-row td {
+        padding: 64px 24px !important;
+        text-align: center !important;
+    }
+
+    .empty-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .empty-ico {
+        width: 68px;
+        height: 68px;
+        background: linear-gradient(135deg,#f9f7f4,#ede8df);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: #ccc;
+        margin-bottom: 16px;
+        border: 2px dashed #e0d9ce;
+    }
+
+    /* ── DELETE MODAL ── */
+    .del-mc {
+        border-radius: 18px !important;
+        border: 1px solid #f0ede8 !important;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.13) !important;
+    }
+
+    .del-mb {
+        padding: 34px 28px 20px;
+        text-align: center;
+    }
+
+    .del-mt {
+        font-family: 'Playfair Display', serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 7px;
+    }
+
+    .del-mf {
+        padding: 0 28px 26px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-cancel-m {
+        flex: 1;
+        border-radius: 10px;
+        border: 1px solid #ebebeb;
+        background: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #555;
+        padding: 11px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-cancel-m:hover {
+            background: #f7f5f2;
+        }
+
+    .btn-del-ok {
+        flex: 1;
+        border-radius: 10px;
+        background: var(--red);
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 11px;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: var(--tr);
+    }
+
+        .btn-del-ok:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+
+    /* ── ANIMATIONS ── */
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 2px rgba(34,197,94,.25)
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(34,197,94,.08)
+        }
+    }
+
+    @@media (max-width:1199.98px) {
+        .stat-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+    }
+
+    @@media (max-width:767.98px) {
+        .col-num, .col-date {
+            display: none;
+        }
+
+        .result-count {
+            display: none;
+        }
+    }
+</style>
+
+<!-- ── PAGE HEADER ── -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title">
+            <i class="bi bi-star-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>
+            Değerlendirme Yönetimi
+        </h1>
+        <p class="pg-desc">Müşteri yorumlarını görüntüleyin ve yönetin.</p>
+    </div>
+    <a href="/Review/CreateReview/" class="btn-add">
+        <i class="bi bi-plus-lg"></i>
+        Yeni Değerlendirme
+    </a>
+</div>
+
+<!-- ── STAT CARDS ── -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#f5f2ee;">
+            <i class="bi bi-star-half" style="color:#aaa;"></i>
+        </div>
+        <div>
+            <div class="stat-num">@total</div>
+            <div class="stat-lbl">Toplam Yorum</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-soft);">
+            <i class="bi bi-eye-fill" style="color:var(--green);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:#16a34a;">@active</div>
+            <div class="stat-lbl">Yayında</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--accent-soft);">
+            <i class="bi bi-star-fill" style="color:var(--accent);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:var(--accent-dark);">@avgRating.ToString("F1")</div>
+            <div class="stat-lbl">Ortalama Puan</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:var(--yellow-soft);">
+            <i class="bi bi-trophy-fill" style="color:var(--yellow);"></i>
+        </div>
+        <div>
+            <div class="stat-num" style="color:#b45309;">@fiveStar</div>
+            <div class="stat-lbl">5 Yıldızlı Yorum</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── RATING OVERVIEW ── -->
+@if (Model != null && Model.Any())
+{
+    var avg = Model.Average(r => r.Rating);
+    var dist = Enumerable.Range(1, 5).ToDictionary(
+        s => s,
+        s => Model.Count(r => r.Rating == s)
+    );
+    var maxDist = dist.Values.Max() == 0 ? 1 : dist.Values.Max();
+
+    <div class="rating-overview">
+        <div class="ro-score">
+            <div class="ro-num">@avg.ToString("F1")</div>
+            <div class="ro-stars">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span style="color:@(i <= Math.Round(avg) ? "var(--accent)" : "rgba(255,255,255,0.15)");">★</span>
+                }
+            </div>
+            <div class="ro-total">@total yorum</div>
+        </div>
+
+        <div class="ro-divider"></div>
+
+        <div class="ro-bars">
+            @for (int s = 5; s >= 1; s--)
+            {
+                var cnt = dist[s];
+                var pct = total > 0 ? (cnt * 100 / total) : 0;
+                <div class="ro-bar-row">
+                    <span class="ro-bar-label">@s</span>
+                    <div class="ro-bar-wrap">
+                        <div class="ro-bar-fill" style="width:@pct%;"></div>
+                    </div>
+                    <span class="ro-bar-count">@cnt</span>
+                </div>
+            }
+        </div>
+
+        <div class="ro-divider"></div>
+
+        <div class="ro-stats">
+            <div class="ro-stat">
+                <div class="ro-stat-num" style="color:var(--green);">@active</div>
+                <div class="ro-stat-lbl">Yayında</div>
+            </div>
+            <div class="ro-stat">
+                <div class="ro-stat-num" style="color:var(--red);">@passive</div>
+                <div class="ro-stat-lbl">Gizli</div>
+            </div>
+            <div class="ro-stat">
+                <div class="ro-stat-num" style="color:var(--accent);">@fiveStar</div>
+                <div class="ro-stat-lbl">5 Yıldız</div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ── TOOLBAR ── -->
+<div class="toolbar">
+    <div class="search-wrap">
+        <i class="bi bi-search si"></i>
+        <input type="text" class="search-input" id="searchInput"
+               placeholder="Müşteri adı veya yorum ara..."
+               oninput="filterTable()" />
+    </div>
+    <select class="f-select" id="statusFilter" onchange="filterTable()">
+        <option value="all">Tüm Durumlar</option>
+        <option value="active">Yayında</option>
+        <option value="passive">Gizli</option>
+    </select>
+    <select class="f-select" id="ratingFilter" onchange="filterTable()">
+        <option value="all">Tüm Puanlar</option>
+        <option value="5">★★★★★ Mükemmel</option>
+        <option value="4">★★★★ Çok İyi</option>
+        <option value="3">★★★ İyi</option>
+        <option value="2">★★ Orta</option>
+        <option value="1">★ Kötü</option>
+    </select>
+    <select class="f-select" id="sortSelect" onchange="sortTable()">
+        <option value="default">Sıralama</option>
+        <option value="rating-desc">Puan ↓</option>
+        <option value="rating-asc">Puan ↑</option>
+        <option value="date-desc">Tarih ↓</option>
+        <option value="date-asc">Tarih ↑</option>
+        <option value="name-asc">Ad A→Z</option>
+    </select>
+    <div class="toolbar-right">
+        <span class="result-count" id="resultCount">@total yorum</span>
+    </div>
+</div>
+
+<!-- ── TABLE CARD ── -->
+<div class="tbl-card">
+    <div style="overflow-x:auto;">
+        <table class="rev-table" id="revTable">
+            <thead>
+                <tr>
+                    <th class="col-num no-sort">#</th>
+                    <th class="col-customer" onclick="sortBy('name')">Müşteri <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-product no-sort">Ürün</th>
+                    <th class="col-rating" onclick="sortBy('rating')">Puan <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-comment no-sort">Yorum</th>
+                    <th class="col-date" onclick="sortBy('date')">Tarih <i class="bi bi-chevron-expand sort-icon"></i></th>
+                    <th class="col-status no-sort">Durum</th>
+                    <th class="col-act no-sort">İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="revBody">
+
+                @if (Model == null || !Model.Any())
+                {
+                    <tr class="empty-row">
+                        <td colspan="8">
+                            <div class="empty-inner">
+                                <div class="empty-ico"><i class="bi bi-star"></i></div>
+                                <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#333;margin-bottom:6px;">Henüz değerlendirme yok</div>
+                                <p style="font-size:13px;color:#bbb;margin-bottom:18px;">İlk müşteri değerlendirmesini ekleyin.</p>
+                                <a href="/Review/CreateReview/" class="btn-add" style="display:inline-flex;">
+                                    <i class="bi bi-plus-lg"></i> Yeni Değerlendirme
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    var avatarColors = new[] { "#e6a03c", "#3b82f6", "#22c55e", "#8b5cf6", "#14b8a6", "#ef4444", "#f59e0b" };
+
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var r = Model[i];
+                        var sc = r.Status ? "active" : "passive";
+                        var sl = r.Status ? "Yayında" : "Gizli";
+                        var initials = string.Join("", r.CustomerName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+                        var avatarColor = avatarColors[i % avatarColors.Length];
+                        var filledStars = new string('★', r.Rating);
+                        var emptyStars = new string('★', 5 - r.Rating);
+
+                        <tr data-name="@r.CustomerName.ToLower()"
+                            data-comment="@(r.Comment?.ToLower() ?? "")"
+                            data-rating="@r.Rating"
+                            data-status="@sc"
+                            data-date="@r.CreatedAt.ToString("yyyy-MM-dd")">
+                            <td class="col-num"><span class="row-num">@(i + 1)</span></td>
+                            <td class="col-customer">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="customer-avatar" style="background:@avatarColor;">@initials</div>
+                                    <span class="customer-name">@r.CustomerName</span>
+                                </div>
+                            </td>
+                            <td class="col-product">
+                                <span class="product-badge">
+                                    <i class="bi bi-basket3-fill" style="font-size:10px;"></i>
+                                    @r.ProductName
+                                </span>
+                            </td>
+                            <td class="col-rating">
+                                <div class="star-display">
+                                    <span class="stars-filled">@filledStars</span>
+                                    <span class="stars-empty">@emptyStars</span>
+                                    <span class="rating-num">@r.Rating/5</span>
+                                </div>
+                            </td>
+                            <td class="col-comment">
+                                @if (!string.IsNullOrWhiteSpace(r.Comment))
+                                {
+                                    <span class="comment-text" title="@r.Comment">@r.Comment</span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12px;color:#ddd;">—</span>
+                                }
+                            </td>
+                            <td class="col-date">
+                                <span class="date-cell">@r.CreatedAt.ToString("dd MMM yyyy")</span>
+                            </td>
+                            <td class="col-status">
+                                <span class="s-badge @(r.Status ? "sb-active" : "sb-passive")">
+                                    <span class="s-dot"></span>@sl
+                                </span>
+                            </td>
+                            <td class="col-act">
+                                <div class="act-group">
+                                    <a href="/Review/UpdateReview/@r.ReviewId"
+                                       class="btn-act edit" data-tip="Düzenle">
+                                        <i class="bi bi-pencil-fill"></i>
+                                    </a>
+                                    <a href="/Review/ToggleStatus/@r.ReviewId"
+                                       class="btn-act @(r.Status ? "toggle-on" : "toggle-off")"
+                                       data-tip="@(r.Status ? "Gizle" : "Yayınla")">
+                                        <i class="bi bi-@(r.Status ? "eye-slash-fill" : "eye-fill")"></i>
+                                    </a>
+                                    <button class="btn-act del" data-tip="Sil"
+                                            onclick="confirmDelete(@r.ReviewId, '@r.CustomerName')">
+                                        <i class="bi bi-trash3-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tbl-footer">
+        <div class="tf-info">Toplam <strong id="visibleCount">@total</strong> yorum gösteriliyor</div>
+        <div class="pag" id="pagination"></div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content del-mc">
+            <div class="del-mb">
+                <div style="width:62px;height:62px;background:#fff5f5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#ef4444;border:1.5px solid #fecaca;">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                <div class="del-mt">Yorum Silinsin mi?</div>
+                <p style="font-size:13.5px;color:#888;margin-bottom:4px;">
+                    <strong id="delName" style="color:#333;"></strong> adlı müşterinin yorumu kalıcı olarak silinecek.
+                </p>
+                <p style="font-size:12px;color:#ccc;margin-bottom:0;">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="del-mf">
+                <button class="btn-cancel-m" data-bs-dismiss="modal">Vazgeç</button>
+                <a id="delLink" href="#" class="btn-del-ok">
+                    <i class="bi bi-trash3-fill"></i> Evet, Sil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var allRows = [];
+        var filtered = [];
+        var curPage = 1;
+        var perPage = 20;
+        var sortField = null;
+        var sortDir = 'asc';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            allRows = Array.from(document.querySelectorAll('#revBody tr[data-name]'));
+            filtered = allRows.slice();
+            renderPagination();
+            showPage(1);
+        });
+
+        function filterTable() {
+            var q = document.getElementById('searchInput').value.toLowerCase().trim();
+            var status = document.getElementById('statusFilter').value;
+            var rating = document.getElementById('ratingFilter').value;
+
+            filtered = allRows.filter(function(row) {
+                var nm = (row.dataset.name || '').includes(q) ||
+                    (row.dataset.comment || '').includes(q);
+                var sm = status === 'all' || row.dataset.status === status;
+                var rm = rating === 'all' || row.dataset.rating === rating;
+                return nm && sm && rm;
+            });
+
+            if (sortField) applySortToFiltered();
+            curPage = 1; renderPagination(); showPage(1); updateCounts();
+        }
+
+        function sortBy(field) {
+            if (sortField === field) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+            else { sortField = field; sortDir = 'asc'; }
+
+            document.querySelectorAll('.rev-table thead th').forEach(function(th) {
+                th.classList.remove('sorted');
+                var ico = th.querySelector('.sort-icon');
+                if (ico) ico.className = 'bi bi-chevron-expand sort-icon';
+            });
+
+            var colMap = { name: 1, rating: 3, date: 5 };
+            var th = document.querySelectorAll('.rev-table thead th')[colMap[field]];
+            if (th) {
+                th.classList.add('sorted');
+                var ico = th.querySelector('.sort-icon');
+                if (ico) ico.className = 'bi bi-chevron-' + (sortDir === 'asc' ? 'up' : 'down') + ' sort-icon';
+            }
+
+            applySortToFiltered();
+            curPage = 1; renderPagination(); showPage(1);
+        }
+
+        function sortTable() {
+            var val = document.getElementById('sortSelect').value;
+            if (val === 'default') { sortField = null; filterTable(); return; }
+            var parts = val.split('-');
+            sortField = parts[0]; sortDir = parts[1];
+            applySortToFiltered();
+            curPage = 1; renderPagination(); showPage(1);
+        }
+
+        function applySortToFiltered() {
+            filtered.sort(function(a, b) {
+                if (sortField === 'name') {
+                    var av = a.dataset.name, bv = b.dataset.name;
+                    return sortDir === 'asc' ? av.localeCompare(bv, 'tr') : bv.localeCompare(av, 'tr');
+                }
+                if (sortField === 'rating') {
+                    var av = parseInt(a.dataset.rating), bv = parseInt(b.dataset.rating);
+                    return sortDir === 'asc' ? av - bv : bv - av;
+                }
+                if (sortField === 'date') {
+                    var av = new Date(a.dataset.date), bv = new Date(b.dataset.date);
+                    return sortDir === 'asc' ? av - bv : bv - av;
+                }
+                return 0;
+            });
+        }
+
+        function renderPagination() {
+            var pages = Math.ceil(filtered.length / perPage);
+            var pag = document.getElementById('pagination');
+            if (!pag || pages <= 1) { if (pag) pag.innerHTML = ''; return; }
+
+            var html = '<button class="pag-btn" ' + (curPage <= 1 ? 'disabled' : '') + ' onclick="goPage(' + (curPage - 1) + ')"><i class="bi bi-chevron-left"></i></button>';
+            for (var i = 1; i <= pages; i++) {
+                if (pages > 7 && i > 2 && i < pages - 1 && Math.abs(i - curPage) > 1) {
+                    if (i === 3 || i === pages - 2) html += '<span style="display:flex;align-items:center;justify-content:center;width:32px;color:#bbb;">…</span>';
+                    continue;
+                }
+                html += '<button class="pag-btn ' + (i === curPage ? 'active' : '') + '" onclick="goPage(' + i + ')">' + i + '</button>';
+            }
+            html += '<button class="pag-btn" ' + (curPage >= pages ? 'disabled' : '') + ' onclick="goPage(' + (curPage + 1) + ')"><i class="bi bi-chevron-right"></i></button>';
+            pag.innerHTML = html;
+        }
+
+        function goPage(n) {
+            curPage = n; showPage(n); renderPagination();
+            document.querySelector('.tbl-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showPage(n) {
+            var start = (n - 1) * perPage, end = start + perPage;
+            allRows.forEach(function(r) { r.style.display = 'none'; });
+            filtered.forEach(function(r, i) {
+                r.style.display = (i >= start && i < end) ? '' : 'none';
+                var chip = r.querySelector('.row-num');
+                if (chip) chip.textContent = i + 1;
+            });
+
+            var empty = document.querySelector('.empty-row');
+            if (empty) empty.style.display = filtered.length === 0 ? '' : 'none';
+            if (filtered.length === 0 && !empty) {
+                var body = document.getElementById('revBody');
+                var te = body.querySelector('.temp-empty');
+                if (te) te.remove();
+                var tr = document.createElement('tr');
+                tr.className = 'empty-row temp-empty';
+                tr.innerHTML = '<td colspan="8"><div class="empty-inner"><div class="empty-ico"><i class="bi bi-search"></i></div><div style="font-family:\'Playfair Display\',serif;font-size:15px;font-weight:700;color:#333;margin-bottom:6px;">Sonuç bulunamadı</div><p style="font-size:13px;color:#bbb;">Filtre veya arama kriterlerinizi değiştirin.</p></div></td>';
+                body.appendChild(tr);
+            } else {
+                var te = document.querySelector('.temp-empty');
+                if (te) te.remove();
+            }
+        }
+
+        function updateCounts() {
+            var vc = document.getElementById('visibleCount');
+            if (vc) vc.textContent = filtered.length;
+            var rc = document.getElementById('resultCount');
+            if (rc) rc.textContent = filtered.length + ' yorum';
+        }
+
+        function confirmDelete(id, name) {
+            document.getElementById('delName').textContent = name;
+            document.getElementById('delLink').href = '/Review/DeleteReview/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

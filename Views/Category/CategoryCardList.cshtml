@@ -1,0 +1,840 @@
+﻿@model List<ResultCategoryDto>
+
+@{
+    ViewData["Title"] = "CategoryCardList";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+
+<style>
+    /* ========================================
+               CATEGORY CARD LIST
+            ======================================== */
+    :root {
+        --accent: #e6a03c;
+        --accent-dark: #c8861e;
+        --accent-soft: rgba(230,160,60,0.10);
+        --green: #22c55e;
+        --green-soft: rgba(34,197,94,0.12);
+        --red: #ef4444;
+        --red-soft: rgba(239,68,68,0.12);
+        --border: #eeebe5;
+        --cr: 16px;
+        --tr: all 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ---------- PAGE HEADER ---------- */
+    .pg-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 26px;
+        flex-wrap: wrap;
+    }
+
+    .pg-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 23px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .pg-desc {
+        font-size: 13px;
+        color: #999;
+        margin: 0;
+    }
+
+    .btn-add {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--tr);
+        box-shadow: 0 4px 16px rgba(230,160,60,0.30);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(230,160,60,0.40);
+            color: #fff;
+        }
+
+    /* ---------- STATS PILLS ---------- */
+    .stats-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+    }
+
+    .s-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 30px;
+        padding: 6px 14px 6px 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #555;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+    }
+
+        .s-pill .p-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .s-pill .p-num {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+    /* ---------- TOOLBAR ---------- */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px;
+        max-width: 340px;
+    }
+
+        .search-wrap .si {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+    .search-input {
+        width: 100%;
+        padding: 10px 12px 10px 38px;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #1a1a1a;
+        outline: none;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.13);
+        }
+
+    .filter-select {
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        font-size: 13px;
+        font-family: 'DM Sans', sans-serif;
+        background: #fff;
+        color: #555;
+        outline: none;
+        cursor: pointer;
+        transition: var(--tr);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+        .filter-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.13);
+        }
+
+    .view-toggle {
+        margin-left: auto;
+        display: flex;
+        gap: 4px;
+        background: #f5f2ed;
+        padding: 4px;
+        border-radius: 10px;
+    }
+
+    .vt-btn {
+        width: 34px;
+        height: 34px;
+        border: none;
+        background: transparent;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #aaa;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .vt-btn.active {
+            background: #fff;
+            color: var(--accent-dark);
+            box-shadow: 0 1px 5px rgba(0,0,0,0.08);
+        }
+
+    /* ---------- GRID ---------- */
+    #catGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+    }
+
+        #catGrid.list-view {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+    /* ---------- CARD (GRID MODE) ---------- */
+    .cat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--cr);
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        transition: var(--tr);
+        animation: cardIn 0.38s ease both;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .cat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.11);
+            border-color: #ddd8ce;
+        }
+
+    /* Image area */
+    .c-img {
+        position: relative;
+        width: 100%;
+        height: 175px;
+        overflow: hidden;
+        background: #f5f2ee;
+        flex-shrink: 0;
+    }
+
+        .c-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+            display: block;
+        }
+
+    .cat-card:hover .c-img img {
+        transform: scale(1.07);
+    }
+
+    .c-img-ph {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #f9f7f4, #ede8df);
+        color: #ccc;
+        font-size: 30px;
+    }
+
+        .c-img-ph small {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: #ccc;
+            letter-spacing: 0.04em;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+    /* Status overlay */
+    .c-status {
+        position: absolute;
+        top: 11px;
+        right: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 700;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        letter-spacing: 0.01em;
+    }
+
+        .c-status.active {
+            background: rgba(22,197,94,0.18);
+            color: #15803d;
+            border: 1px solid rgba(34,197,94,0.28);
+        }
+
+        .c-status.passive {
+            background: rgba(239,68,68,0.16);
+            color: #b91c1c;
+            border: 1px solid rgba(239,68,68,0.26);
+        }
+
+    .c-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .c-status.active .c-dot {
+        background: var(--green);
+        animation: pulse 2s infinite;
+    }
+
+    .c-status.passive .c-dot {
+        background: var(--red);
+    }
+
+    /* ID chip */
+    .c-chip {
+        position: absolute;
+        bottom: 9px;
+        left: 9px;
+        background: rgba(0,0,0,0.42);
+        color: rgba(255,255,255,0.85);
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 20px;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        letter-spacing: 0.05em;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Card footer */
+    .c-foot {
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .c-name {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: #1a1a1a;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .c-acts {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    /* ---------- CARD (LIST MODE) ---------- */
+    #catGrid.list-view .cat-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    #catGrid.list-view .c-img {
+        width: 86px;
+        height: 86px;
+        border-radius: 0;
+        flex-shrink: 0;
+    }
+
+    #catGrid.list-view .c-chip {
+        display: none;
+    }
+
+    #catGrid.list-view .c-status {
+        top: 8px;
+        right: 8px;
+        font-size: 10.5px;
+        padding: 3px 8px;
+    }
+
+    #catGrid.list-view .c-foot {
+        flex: 1;
+        padding: 0 18px;
+    }
+
+    /* ---------- ACTION BUTTONS ---------- */
+    .btn-act {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 33px;
+        height: 33px;
+        border-radius: 9px;
+        border: 1px solid transparent;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--tr);
+        position: relative;
+    }
+
+        .btn-act.edit {
+            background: #fff7ed;
+            color: var(--accent-dark);
+            border-color: #fde8c0;
+        }
+
+            .btn-act.edit:hover {
+                background: var(--accent);
+                color: #fff;
+                border-color: var(--accent);
+                transform: scale(1.12);
+                box-shadow: 0 3px 10px rgba(230,160,60,0.38);
+            }
+
+        .btn-act.delete {
+            background: #fff5f5;
+            color: var(--red);
+            border-color: #fecaca;
+        }
+
+            .btn-act.delete:hover {
+                background: var(--red);
+                color: #fff;
+                border-color: var(--red);
+                transform: scale(1.12);
+                box-shadow: 0 3px 10px rgba(239,68,68,0.35);
+            }
+
+        .btn-act::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 7px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            background: #1a1a1a;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            padding: 4px 9px;
+            border-radius: 6px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.15s ease;
+        }
+
+        .btn-act:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+    /* ---------- EMPTY STATE ---------- */
+    .empty-state {
+        grid-column: 1 / -1;
+        padding: 72px 24px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 76px;
+        height: 76px;
+        background: linear-gradient(135deg, #f9f7f4, #f0ebe2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: #ccc;
+        margin: 0 auto 20px;
+        border: 2px dashed #e0d9ce;
+    }
+
+    .empty-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .empty-desc {
+        font-size: 13.5px;
+        color: #bbb;
+        margin-bottom: 22px;
+    }
+
+    /* ---------- ANIMATIONS ---------- */
+    @@keyframes cardIn {
+        from {
+            opacity: 0;
+            transform: translateY(14px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
+        }
+
+        50% {
+            box-shadow: 0 0 0 5px rgba(34,197,94,0.08);
+        }
+    }
+
+    /* ---------- DELETE MODAL ---------- */
+    .del-mc {
+        border-radius: 18px !important;
+        border: 1px solid #f0ede8 !important;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.13) !important;
+    }
+
+    .del-mb {
+        padding: 36px 30px 22px;
+        text-align: center;
+    }
+
+    .del-mt {
+        font-family: 'Playfair Display', serif;
+        font-size: 19px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+
+    .del-mf {
+        padding: 0 30px 28px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        border-radius: 11px;
+        border: 1px solid #ebebeb;
+        background: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #555;
+        padding: 11px;
+        cursor: pointer;
+        transition: var(--tr);
+    }
+
+        .btn-cancel:hover {
+            background: #f7f5f2;
+        }
+
+    .btn-del-ok {
+        flex: 1;
+        border-radius: 11px;
+        background: var(--red);
+        color: #fff;
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 11px;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        box-shadow: 0 4px 14px rgba(239,68,68,0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: var(--tr);
+    }
+
+        .btn-del-ok:hover {
+            background: #dc2626;
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(239,68,68,0.38);
+        }
+
+    /* ---------- RESPONSIVE ---------- */
+    @@media (max-width: 767.98px) {
+        #catGrid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+        }
+
+        .view-toggle {
+            display: none;
+        }
+    }
+
+    @@media (max-width: 500px) {
+        #catGrid {
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .c-img {
+            height: 130px;
+        }
+
+        .c-foot {
+            padding: 10px 12px;
+        }
+
+        .c-name {
+            font-size: 12.5px;
+        }
+    }
+</style>
+
+<!-- =====================================================
+     PAGE HEADER
+===================================================== -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title">
+            <i class="bi bi-tags-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>
+            Kategori Yönetimi
+        </h1>
+        <p class="pg-desc">Menü kategorilerinizi görüntüleyin, düzenleyin ve yönetin.</p>
+    </div>
+    <a href="/Category/CreateCategory/" class="btn-add">
+        <i class="bi bi-plus-lg"></i>
+        Yeni Kategori Ekle
+    </a>
+</div>
+
+<!-- =====================================================
+     STATS PILLS
+===================================================== -->
+@{
+    var total = Model?.Count ?? 0;
+    var active = Model?.Count(c => c.CategoryStatus) ?? 0;
+    var passive = total - active;
+}
+
+<div class="stats-row">
+    <div class="s-pill">
+        <div class="p-icon" style="background:#f5f2ee;">
+            <i class="bi bi-grid-1x2-fill" style="color:#aaa;"></i>
+        </div>
+        <span>Toplam</span>
+        <span class="p-num">@total</span>
+    </div>
+    <div class="s-pill">
+        <div class="p-icon" style="background:var(--green-soft);">
+            <i class="bi bi-check-circle-fill" style="color:var(--green);"></i>
+        </div>
+        <span>Aktif</span>
+        <span class="p-num" style="color:#16a34a;">@active</span>
+    </div>
+    <div class="s-pill">
+        <div class="p-icon" style="background:var(--red-soft);">
+            <i class="bi bi-x-circle-fill" style="color:var(--red);"></i>
+        </div>
+        <span>Pasif</span>
+        <span class="p-num" style="color:#dc2626;">@passive</span>
+    </div>
+</div>
+
+<!-- =====================================================
+     TOOLBAR
+===================================================== -->
+<div class="toolbar">
+    <div class="search-wrap">
+        <i class="bi bi-search si"></i>
+        <input type="text"
+               class="search-input"
+               id="searchInput"
+               placeholder="Kategori ara..."
+               oninput="filterCards()" />
+    </div>
+    <select class="filter-select" id="statusFilter" onchange="filterCards()">
+        <option value="all">Tüm Durumlar</option>
+        <option value="active">Aktif</option>
+        <option value="passive">Pasif</option>
+    </select>
+    <div class="view-toggle">
+        <button class="vt-btn active" id="gridBtn" onclick="setView('grid')" title="Grid görünüm">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+        </button>
+        <button class="vt-btn" id="listBtn" onclick="setView('list')" title="Liste görünüm">
+            <i class="bi bi-list-ul"></i>
+        </button>
+    </div>
+</div>
+
+<!-- =====================================================
+     CARD GRID
+===================================================== -->
+<div id="catGrid">
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-tags"></i></div>
+            <div class="empty-title">Henüz kategori eklenmemiş</div>
+            <p class="empty-desc">Menünüzü düzenlemek için ilk kategorinizi oluşturun.</p>
+            <a href="/Category/CreateCategory/" class="btn-add" style="display:inline-flex;">
+                <i class="bi bi-plus-lg"></i> Yeni Kategori Ekle
+            </a>
+        </div>
+    }
+    else
+    {
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var cat = Model[i];
+            var isActive = cat.CategoryStatus;
+            var sc = isActive ? "active" : "passive";
+            var sl = isActive ? "Aktif" : "Pasif";
+            var delay = i * 45;
+
+            <div class="cat-card"
+                 data-name="@cat.CategoryName.ToLower()"
+                 data-status="@sc"
+                 style="animation-delay:@(delay)ms;">
+                <div class="c-img">
+                    @if (!string.IsNullOrWhiteSpace(cat.CategoryImageUrl))
+                    {
+                        <img src="@cat.CategoryImageUrl"
+                             alt="@cat.CategoryName"
+                             loading="lazy"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                        <div class="c-img-ph" style="display:none;">
+                            <i class="bi bi-image"></i>
+                            <small>Görsel Yok</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="c-img-ph">
+                            <i class="bi bi-image"></i>
+                            <small>Görsel Yok</small>
+                        </div>
+                    }
+                    <span class="c-status @sc">
+                        <span class="c-dot"></span>@sl
+                    </span>
+                    <span class="c-chip">#@cat.CategoryId</span>
+                </div>
+
+                <div class="c-foot">
+                    <div class="c-name" title="@cat.CategoryName">@cat.CategoryName</div>
+                    <div class="c-acts">
+                        <a href="/Category/UpdateCategory/@cat.CategoryId"
+                           class="btn-act edit"
+                           data-tip="Düzenle">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <button class="btn-act delete"
+                                data-tip="Sil"
+                                onclick="confirmDelete(@cat.CategoryId, '@cat.CategoryName')">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+</div>
+
+<!-- =====================================================
+     DELETE MODAL
+===================================================== -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content del-mc">
+            <div class="del-mb">
+                <div style="width:64px;height:64px;background:#fff5f5;border-radius:50%;
+                    display:flex;align-items:center;justify-content:center;
+                    margin:0 auto 18px;font-size:26px;color:#ef4444;
+                    border:1.5px solid #fecaca;">
+                    <i class="bi bi-trash3-fill"></i>
+                </div>
+                <div class="del-mt">Kategori Silinsin mi?</div>
+                <p style="font-size:13.5px;color:#888;margin-bottom:4px;">
+                    <strong id="delCatName" style="color:#333;"></strong>
+                    adlı kategori kalıcı olarak silinecek.
+                </p>
+                <p style="font-size:12px;color:#ccc;margin-bottom:0;">Bu işlem geri alınamaz.</p>
+            </div>
+            <div class="del-mf">
+                <button class="btn-cancel" data-bs-dismiss="modal">Vazgeç</button>
+                <a id="delLink" href="#" class="btn-del-ok">
+                    <i class="bi bi-trash3-fill"></i> Evet, Sil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        /* Filter */
+        function filterCards() {
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const st = document.getElementById('statusFilter').value;
+            document.querySelectorAll('#catGrid .cat-card').forEach(c => {
+                const nm = (c.dataset.name || '').includes(q);
+                const sm = st === 'all' || c.dataset.status === st;
+                c.style.display = (nm && sm) ? '' : 'none';
+            });
+        }
+
+        /* View toggle */
+        function setView(mode) {
+            const g = document.getElementById('catGrid');
+            document.getElementById('gridBtn').classList.toggle('active', mode === 'grid');
+            document.getElementById('listBtn').classList.toggle('active', mode === 'list');
+            g.classList.toggle('list-view', mode === 'list');
+            localStorage.setItem('catView', mode);
+        }
+
+        /* Restore preference */
+        (function() {
+            if (localStorage.getItem('catView') === 'list') setView('list');
+        })();
+
+        /* Delete modal */
+        function confirmDelete(id, name) {
+            document.getElementById('delCatName').textContent = name;
+            document.getElementById('delLink').href = '/Category/DeleteCategory/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+}

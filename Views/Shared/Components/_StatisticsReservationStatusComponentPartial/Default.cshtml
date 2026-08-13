@@ -1,0 +1,49 @@
+﻿<div class="col-xl-4">
+    <div class="sec-card" style="animation-delay:.1s;">
+        <div class="card-head">
+            <div class="ch-icon" style="background:var(--accent-soft);">
+                <i class="bi bi-calendar2-check" style="color:var(--accent-dark);"></i>
+            </div>
+            <div><div class="sec-title">Rezervasyon Durumu</div><div class="sec-sub">Genel dağılım</div></div>
+        </div>
+        <div class="card-body">
+            <div class="status-row">
+                <div class="status-chip sc-approved">
+                    <div class="sc-num" style="color:#16a34a;">@ViewBag.approved</div>
+                    <div class="sc-lbl">Onaylandı</div>
+                </div>
+                <div class="status-chip sc-pending">
+                    <div class="sc-num" style="color:#b45309;">@ViewBag.pending</div>
+                    <div class="sc-lbl">Beklemede</div>
+                </div>
+                <div class="status-chip sc-cancel">
+                    <div class="sc-num" style="color:#dc2626;">@ViewBag.cancelled</div>
+                    <div class="sc-lbl">İptal</div>
+                </div>
+            </div>
+            <div class="prog-list">
+                <div>
+                    <div class="prog-top">
+                        <div class="prog-name"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;"></span>Onaylanan</div>
+                        <div class="prog-val">@ViewBag.approved — %@ViewBag.approvedRate</div>
+                    </div>
+                    <div class="prog-track"><div class="prog-fill" style="width:@(ViewBag.approvedRate)%;background:var(--green);"></div></div>
+                </div>
+                <div>
+                    <div class="prog-top">
+                        <div class="prog-name"><span style="width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block;"></span>Beklemede</div>
+                        <div class="prog-val">@ViewBag.pending — %@ViewBag.pendingRate</div>
+                    </div>
+                    <div class="prog-track"><div class="prog-fill" style="width:@(ViewBag.pendingRate)%;background:var(--yellow);"></div></div>
+                </div>
+                <div>
+                    <div class="prog-top">
+                        <div class="prog-name"><span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;"></span>İptal Edilen</div>
+                        <div class="prog-val">@ViewBag.cancelled — %@ViewBag.cancelledRate</div>
+                    </div>
+                    <div class="prog-track"><div class="prog-fill" style="width:@(ViewBag.cancelledRate)%;background:var(--red);"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

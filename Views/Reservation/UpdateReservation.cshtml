@@ -1,0 +1,993 @@
+﻿@model GetReservationByIdDto
+
+@{
+    ViewData["Title"] = "UpdateReservation";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+
+<style>
+    :root {
+        --accent: #e6a03c;
+        --accent-dark: #c8861e;
+        --accent-soft: rgba(230,160,60,0.10);
+        --green: #22c55e;
+        --green-soft: rgba(34,197,94,0.10);
+        --red: #ef4444;
+        --red-soft: rgba(239,68,68,0.10);
+        --border: #eeebe5;
+        --text: #1a1a1a;
+        --muted: #9a9590;
+        --radius: 14px;
+        --radius-sm: 10px;
+        --tr: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── PAGE HEADER ── */
+    .pg-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        animation: fadeDown 0.4s ease both;
+    }
+
+    .pg-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .pg-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        text-decoration: none;
+        transition: var(--tr);
+        box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+    }
+
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+        }
+
+    /* ── LAYOUT ── */
+    .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 22px;
+        align-items: start;
+        animation: fadeUp 0.4s 0.06s ease both;
+    }
+
+    /* ── CARD ── */
+    .form-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border);
+        background: #fafaf8;
+    }
+
+    .card-header-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .card-header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0 0 2px;
+    }
+
+    .card-header-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 22px;
+    }
+
+    /* ── FORM GRID ── */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row.triple {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .form-label .req {
+            color: var(--accent);
+            font-size: 13px;
+        }
+
+    .form-control {
+        padding: 11px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        font-size: 13.5px;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--text);
+        background: #fff;
+        outline: none;
+        transition: var(--tr);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.13);
+        }
+
+        .form-control:hover:not(:focus) {
+            border-color: #d8d4cc;
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px var(--red-soft);
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 90px;
+        line-height: 1.6;
+    }
+
+    /* Input with icon */
+    .input-wrap {
+        position: relative;
+    }
+
+        .input-wrap .i-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #ccc;
+            pointer-events: none;
+            transition: var(--tr);
+        }
+
+        .input-wrap .form-control {
+            padding-left: 38px;
+        }
+
+        .input-wrap:focus-within .i-icon {
+            color: var(--accent);
+        }
+
+        .input-wrap.textarea-wrap .i-icon {
+            top: 14px;
+            transform: none;
+        }
+
+        .input-wrap.textarea-wrap .form-control {
+            padding-left: 38px;
+        }
+
+    /* Select */
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+
+    /* ── GUEST STEPPER ── */
+    .stepper {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        transition: var(--tr);
+        background: #fff;
+    }
+
+        .stepper:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230,160,60,0.13);
+        }
+
+    .stepper-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafaf8;
+        border: none;
+        font-size: 18px;
+        color: #888;
+        cursor: pointer;
+        transition: var(--tr);
+        flex-shrink: 0;
+        font-weight: 700;
+    }
+
+        .stepper-btn:hover {
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+        }
+
+        .stepper-btn:active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+    .stepper-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        font-variant-numeric: tabular-nums;
+        background: transparent;
+    }
+
+    .stepper-label {
+        padding-right: 12px;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    /* ── STATUS SELECTOR ── */
+    .status-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .status-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: var(--tr);
+        background: #fff;
+    }
+
+        .status-option:hover {
+            border-color: #d8d4cc;
+            background: #fdfcfa;
+        }
+
+        .status-option input[type="radio"] {
+            display: none;
+        }
+
+        .status-option.selected-beklemede {
+            border-color: #f59e0b;
+            background: rgba(245,158,11,0.07);
+        }
+
+        .status-option.selected-onaylandi {
+            border-color: var(--green);
+            background: var(--green-soft);
+        }
+
+        .status-option.selected-iptal {
+            border-color: var(--red);
+            background: var(--red-soft);
+        }
+
+    .so-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .so-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .so-desc {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-left: auto;
+    }
+
+    .so-check {
+        margin-left: auto;
+        font-size: 16px;
+        opacity: 0;
+        transition: var(--tr);
+    }
+
+    .status-option.selected-beklemede .so-check,
+    .status-option.selected-onaylandi .so-check,
+    .status-option.selected-iptal .so-check {
+        opacity: 1;
+    }
+
+    /* ── SUMMARY CARD ── */
+    .summary-card {
+        background: linear-gradient(145deg, #1a1a1a 0%, #2d2a26 100%);
+        border-radius: var(--radius);
+        padding: 22px;
+        color: #fff;
+        margin-bottom: 0;
+    }
+
+    .summary-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        color: rgba(255,255,255,0.9);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .summary-title i {
+            color: var(--accent);
+        }
+
+    .summary-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 13px;
+    }
+
+        .summary-row:last-of-type {
+            margin-bottom: 0;
+        }
+
+    .sr-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: var(--accent);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .sr-lbl {
+        font-size: 10.5px;
+        color: rgba(255,255,255,0.4);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 2px;
+    }
+
+    .sr-val {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.88);
+        min-height: 18px;
+    }
+
+    .summary-divider {
+        border: none;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        margin: 16px 0;
+    }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 700;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: var(--tr);
+        box-shadow: 0 4px 16px rgba(230,160,60,0.30);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        letter-spacing: 0.01em;
+        margin-top: 16px;
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(230,160,60,0.42);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+    .btn-cancel-form {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: 'DM Sans', sans-serif;
+        cursor: pointer;
+        transition: var(--tr);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+
+        .btn-cancel-form:hover {
+            background: rgba(255,255,255,0.07);
+            color: rgba(255,255,255,0.75);
+        }
+
+    /* ── TIPS CARD ── */
+    .tips-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        margin-top: 16px;
+    }
+
+    .tips-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        margin-bottom: 10px;
+        font-size: 12.5px;
+        color: #666;
+        line-height: 1.5;
+    }
+
+        .tip-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .tip-item i {
+            color: var(--accent);
+            font-size: 13px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+    /* ── VALIDATION ── */
+    .field-error {
+        font-size: 11.5px;
+        color: var(--red);
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ── ANIMATIONS ── */
+    @@keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ── RESPONSIVE ── */
+    @@media (max-width: 1100px) {
+        .form-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .summary-card {
+            margin-bottom: 0;
+        }
+    }
+
+    @@media (max-width: 767.98px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+            .form-row.triple {
+                grid-template-columns: 1fr;
+            }
+
+        .sidebar-col {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- ── PAGE HEADER ── -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title">
+            <i class="bi bi-calendar2-plus-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>
+            Rezervasyon Güncelleme
+        </h1>
+        <p class="pg-desc">Mevcut bir rezervasyonu düzenleyin.</p>
+    </div>
+    <a href="/Reservation/ReservationList/" class="btn-back">
+        <i class="bi bi-arrow-left"></i>
+        Listeye Dön
+    </a>
+</div>
+
+<form asp-action="UpdateReservation" method="post" id="resForm" novalidate>
+    <div class="form-layout">
+
+        
+        <input type="hidden" asp-for="ReservationId" />
+
+        <!-- ═══════════════════ SOL KOLON ═══════════════════ -->
+        <div>
+
+            <!-- MÜŞTERİ BİLGİLERİ -->
+            <div class="form-card" style="margin-bottom:18px;">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:var(--accent-soft);">
+                        <i class="bi bi-person-fill" style="color:var(--accent-dark);"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Müşteri Bilgileri</p>
+                        <p class="card-header-sub">Ad, iletişim ve e-posta bilgilerini girin.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-person"></i> Ad Soyad <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-person i-icon"></i>
+                                <input asp-for="Name" class="form-control" placeholder="Ahmet Yılmaz" id="inpName" oninput="updateSummary()" />
+                            </div>
+                            <span asp-validation-for="Name" class="field-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-telephone"></i> Telefon <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-telephone i-icon"></i>
+                                <input asp-for="Phone" class="form-control" placeholder="0532 000 00 00"
+                                       id="inpPhone" oninput="updateSummary()" />
+                            </div>
+                            <span asp-validation-for="Phone" class="field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-envelope"></i> E-posta
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-envelope i-icon"></i>
+                                <input asp-for="Email" class="form-control" placeholder="ornek@mail.com" type="email" />
+                            </div>
+                            <span asp-validation-for="Email" class="field-error"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- REZERVASYON DETAYLARI -->
+            <div class="form-card" style="margin-bottom:18px;">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:var(--blue-soft,rgba(59,130,246,0.10));">
+                        <i class="bi bi-calendar2-check" style="color:#3b82f6;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Rezervasyon Detayları</p>
+                        <p class="card-header-sub">Tarih, saat ve kişi sayısını belirleyin.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-calendar3"></i> Tarih <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-calendar3 i-icon"></i>
+                                <input asp-for="ReservationDate" type="date" class="form-control"
+                                       id="inpDate" oninput="updateSummary()" />
+                            </div>
+                            <span asp-validation-for="ReservationDate" class="field-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-clock"></i> Saat <span class="req">*</span>
+                            </label>
+                            <div class="input-wrap">
+                                <i class="bi bi-clock i-icon"></i>
+                                <input asp-for="ReservationTime" type="time" class="form-control"
+                                       id="inpTime" oninput="updateSummary()" />
+                            </div>
+                            <span asp-validation-for="ReservationTime" class="field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-people"></i> Kişi Sayısı <span class="req">*</span>
+                            </label>
+                            <div class="stepper">
+                                <button type="button" class="stepper-btn" onclick="changeGuest(-1)">−</button>
+                                <input asp-for="GuestCount" type="number" class="stepper-input"
+                                       id="inpGuest" min="1" max="50" value="2"
+                                       oninput="updateSummary()" readonly />
+                                <span class="stepper-label" id="guestLabel">kişi</span>
+                                <button type="button" class="stepper-btn" onclick="changeGuest(1)">+</button>
+                            </div>
+                            <span asp-validation-for="GuestCount" class="field-error"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ÖZEL NOT -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:#f5f2ee;">
+                        <i class="bi bi-chat-square-text" style="color:#aaa;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Özel İstek / Not</p>
+                        <p class="card-header-sub">Müşterinin isteği veya özel notlar.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="input-wrap textarea-wrap">
+                            <i class="bi bi-chat-square-dots i-icon"></i>
+                            <textarea asp-for="Description" class="form-control"
+                                      placeholder="Doğum günü kutlaması, vejetaryen menü, yüksek sandalye gibi özel istekler..."
+                                      rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ═══════════════════ SAĞ KOLON ═══════════════════ -->
+        <div class="sidebar-col">
+
+            <!-- DURUM SEÇİCİ -->
+            <div class="form-card" style="margin-bottom:16px;">
+                <div class="card-header">
+                    <div class="card-header-icon" style="background:#f5f2ee;">
+                        <i class="bi bi-toggle-on" style="color:#aaa;"></i>
+                    </div>
+                    <div>
+                        <p class="card-header-title">Rezervasyon Durumu</p>
+                        <p class="card-header-sub">Başlangıç durumunu seçin.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <input asp-for="Status" type="hidden" id="hiddenStatus" value="Beklemede" />
+                    <div class="status-picker">
+                        <label class="status-option selected-beklemede" id="opt-beklemede" onclick="selectStatus('Beklemede')">
+                            <span class="so-dot" style="background:#f59e0b;"></span>
+                            <span class="so-label">Beklemede</span>
+                            <i class="bi bi-check-circle-fill so-check" style="color:#f59e0b;"></i>
+                        </label>
+                        <label class="status-option" id="opt-onaylandi" onclick="selectStatus('Onaylandı')">
+                            <span class="so-dot" style="background:var(--green);"></span>
+                            <span class="so-label">Onaylandı</span>
+                            <i class="bi bi-check-circle-fill so-check" style="color:var(--green);"></i>
+                        </label>
+                        <label class="status-option" id="opt-iptal" onclick="selectStatus('İptal Edildi')">
+                            <span class="so-dot" style="background:var(--red);"></span>
+                            <span class="so-label">İptal Edildi</span>
+                            <i class="bi bi-check-circle-fill so-check" style="color:var(--red);"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÖZET KARTI -->
+            <div class="summary-card">
+                <div class="summary-title">
+                    <i class="bi bi-receipt"></i>
+                    Rezervasyon Özeti
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-person-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Misafir</div>
+                        <div class="sr-val" id="sumName">—</div>
+                    </div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-telephone-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Telefon</div>
+                        <div class="sr-val" id="sumPhone">—</div>
+                    </div>
+                </div>
+
+                <hr class="summary-divider" />
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-calendar3"></i></div>
+                    <div>
+                        <div class="sr-lbl">Tarih</div>
+                        <div class="sr-val" id="sumDate">—</div>
+                    </div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-clock-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Saat</div>
+                        <div class="sr-val" id="sumTime">—</div>
+                    </div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Kişi Sayısı</div>
+                        <div class="sr-val" id="sumGuest">2 kişi</div>
+                    </div>
+                </div>
+
+                <hr class="summary-divider" />
+
+                <div class="summary-row">
+                    <div class="sr-icon"><i class="bi bi-circle-fill"></i></div>
+                    <div>
+                        <div class="sr-lbl">Durum</div>
+                        <div class="sr-val" id="sumStatus">Beklemede</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-pencil-fill"></i>
+                    Rezervasyonu Güncelle
+                </button>
+
+                <a href="/Reservation/ReservationList/" class="btn-cancel-form">
+                    <i class="bi bi-x-lg"></i>
+                    Vazgeç
+                </a>
+            </div>
+
+            <!-- İPUÇLARI -->
+            <div class="tips-card">
+                <div class="tips-title">
+                    <i class="bi bi-lightbulb-fill" style="color:var(--accent);"></i>
+                    İpuçları
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Telefon numarasını uluslararası formatta (+90) girebilirsiniz.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Onaylanan rezervasyonlar müşteriye e-posta ile bildirilir.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>Özel not alanı müşteriye görünmez, sadece personel içindir.</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        /* ── GUEST STEPPER ── */
+        function changeGuest(delta) {
+            var inp = document.getElementById('inpGuest');
+            var val = parseInt(inp.value) || 2;
+            val = Math.min(50, Math.max(1, val + delta));
+            inp.value = val;
+            updateSummary();
+        }
+
+        /* ── STATUS SELECTOR ── */
+        var statusMap = {
+            'Beklemede': 'opt-beklemede',
+            'Onaylandı': 'opt-onaylandi',
+            'İptal Edildi': 'opt-iptal'
+        };
+        var statusClassMap = {
+            'Beklemede': 'selected-beklemede',
+            'Onaylandı': 'selected-onaylandi',
+            'İptal Edildi': 'selected-iptal'
+        };
+
+        function selectStatus(val) {
+            document.getElementById('hiddenStatus').value = val;
+
+            // Reset all
+            Object.keys(statusMap).forEach(function(k) {
+                var el = document.getElementById(statusMap[k]);
+                el.className = 'status-option';
+            });
+
+            // Activate selected
+            var target = document.getElementById(statusMap[val]);
+            if (target) target.classList.add(statusClassMap[val]);
+
+            updateSummary();
+        }
+
+        /* ── LIVE SUMMARY ── */
+        var TR_DAYS = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        var TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+        function updateSummary() {
+            /* Name */
+            var name = (document.getElementById('inpName').value || '').trim();
+            document.getElementById('sumName').textContent = name || '—';
+
+            /* Phone */
+            var phone = (document.getElementById('inpPhone').value || '').trim();
+            document.getElementById('sumPhone').textContent = phone || '—';
+
+            /* Date */
+            var dateVal = document.getElementById('inpDate').value;
+            if (dateVal) {
+                var d = new Date(dateVal + 'T00:00:00');
+                var formatted = TR_DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + TR_MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+                document.getElementById('sumDate').textContent = formatted;
+            } else {
+                document.getElementById('sumDate').textContent = '—';
+            }
+
+            /* Time */
+            var timeVal = document.getElementById('inpTime').value;
+            document.getElementById('sumTime').textContent = timeVal || '—';
+
+            /* Guest */
+            var guest = parseInt(document.getElementById('inpGuest').value) || 2;
+            document.getElementById('sumGuest').textContent = guest + ' kişi';
+
+            /* Status */
+            document.getElementById('sumStatus').textContent = document.getElementById('hiddenStatus').value;
+        }
+
+        /* ── SET MIN DATE (today) ── */
+        document.addEventListener('DOMContentLoaded', function() {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('inpDate').setAttribute('min', today);
+            updateSummary();
+        });
+    </script>
+}
+

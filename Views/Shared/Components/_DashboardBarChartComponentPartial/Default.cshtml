@@ -1,0 +1,22 @@
+﻿@using DatabaseMastery.DinnerMenuPostgreSQL.Dtos.ChartDtos
+@model List<CategoryProductCountChartDto>
+<div class="col-xl-4">
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div>
+                <div class="section-title">Kategoriye Göre Ürün Sayısı</div>
+                <div class="section-sub">Aktif kategoriler</div>
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <div class="chart-wrap" style="height:220px;">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.barChartLabels = [@Html.Raw(string.Join(",", Model.Select(x => $"\"{x.CategoryName}\"")))];
+        window.barChartData   = [@Html.Raw(string.Join(",", Model.Select(x => x.ProductCount)))];
+    </script>
+</div>

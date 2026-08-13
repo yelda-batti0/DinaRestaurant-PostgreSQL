@@ -1,0 +1,54 @@
+﻿<div class="col-xl-3">
+    <div class="sec-card" style="animation-delay:.16s;">
+        <div class="card-head">
+            <div class="ch-icon" style="background:var(--yellow-soft);">
+                <i class="bi bi-star-fill" style="color:var(--yellow);"></i>
+            </div>
+            <div>
+                <div class="sec-title">Puan Dağılımı</div>
+                <div class="sec-sub">@ViewBag.totalReview değerlendirme</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div style="text-align:center;margin-bottom:18px;">
+                <div style="font-family:'Playfair Display',serif;font-size:44px;font-weight:800;color:var(--accent-dark);line-height:1;">
+                    @ViewBag.avgRating
+                </div>
+                <div style="color:var(--accent);font-size:20px;letter-spacing:3px;margin:4px 0;">★★★★★</div>
+                <div style="font-size:12px;color:var(--muted);">@ViewBag.totalReview yorum üzerinden</div>
+            </div>
+            <div class="star-dist">
+                <div class="sd-row">
+                    <div class="sd-stars" style="color:var(--accent);">★★★★★</div>
+                    <div class="sd-track"><div class="sd-fill" style="width:@(ViewBag.pct5)%;background:var(--accent);"></div></div>
+                    <div class="sd-count">@ViewBag.star5</div>
+                    <div class="sd-pct">%@ViewBag.pct5</div>
+                </div>
+                <div class="sd-row">
+                    <div class="sd-stars" style="color:var(--green);">★★★★</div>
+                    <div class="sd-track"><div class="sd-fill" style="width:@(ViewBag.pct4)%;background:var(--green);"></div></div>
+                    <div class="sd-count">@ViewBag.star4</div>
+                    <div class="sd-pct">%@ViewBag.pct4</div>
+                </div>
+                <div class="sd-row">
+                    <div class="sd-stars" style="color:var(--blue);">★★★</div>
+                    <div class="sd-track"><div class="sd-fill" style="width:@(ViewBag.pct3)%;background:var(--blue);"></div></div>
+                    <div class="sd-count">@ViewBag.star3</div>
+                    <div class="sd-pct">%@ViewBag.pct3</div>
+                </div>
+                <div class="sd-row">
+                    <div class="sd-stars" style="color:var(--yellow);">★★</div>
+                    <div class="sd-track"><div class="sd-fill" style="width:@(ViewBag.pct2)%;background:var(--yellow);"></div></div>
+                    <div class="sd-count">@ViewBag.star2</div>
+                    <div class="sd-pct">%@ViewBag.pct2</div>
+                </div>
+                <div class="sd-row">
+                    <div class="sd-stars" style="color:var(--red);">★</div>
+                    <div class="sd-track"><div class="sd-fill" style="width:@(ViewBag.pct1)%;background:var(--red);"></div></div>
+                    <div class="sd-count">@ViewBag.star1</div>
+                    <div class="sd-pct">%@ViewBag.pct1</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

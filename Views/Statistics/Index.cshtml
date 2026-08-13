@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "Statistics";
+    Layout = "~/Views/AdminLayout/Index.cshtml";
+}
+
+@await Component.InvokeAsync("_StatisticsStyleComponentPartial")
+
+@await Component.InvokeAsync("_StatisticsHeroComponentPartial")
+@await Component.InvokeAsync("_StatisticsKpiComponentPartial")
+@await Component.InvokeAsync("_StatisticsBigGridComponentPartial")
+
+
+<!-- ROW 1 -->
+<div class="row g-3 mb-3">
+    <!-- Durum -->
+    @await Component.InvokeAsync("_StatisticsReservationStatusComponentPartial")
+    @await Component.InvokeAsync("_StatisticsCategoryTableComponentPartial")
+    @await Component.InvokeAsync("_StatisticsRatingDistComponentPartial")
+
+  
+
+    <!-- Kategori Tablosu -->
+    <!-- Puan Dağılımı -->
+
+</div>
+
+<!-- ROW 2 -->
+<div class="row g-3 mb-3">
+    @await Component.InvokeAsync("_StatisticsTopProductsComponentPartial")
+    @await Component.InvokeAsync("_StatisticsHeatmapComponentPartial")
+
+    <!-- Isı Haritası -->
+    <!-- Müşteri Metrikleri -->
+    <div class="col-xl-3">
+        <div class="sec-card" style="animation-delay:.22s;">
+            <div class="card-head">
+                <div class="ch-icon" style="background:var(--purple-soft);"><i class="bi bi-people-fill" style="color:var(--purple);"></i></div>
+                <div><div class="sec-title">Müşteri Metrikleri</div><div class="sec-sub">Genel profil</div></div>
+            </div>
+            <div class="card-body">
+                <div class="mini-tl">
+                    @{
+                        var mets = new[] { new { bg = "var(--accent-soft)", ic = "bi-person-check-fill", c = "var(--accent-dark)", t = "Tekrar Gelen", s = "Sadık müşteri", v = "%34" }, new { bg = "var(--green-soft)", ic = "bi-person-plus-fill", c = "var(--green)", t = "Yeni Müşteri", s = "Bu ay", v = "47" }, new { bg = "var(--blue-soft)", ic = "bi-people-fill", c = "var(--blue)", t = "Ort. Grup", s = "Kişi/rezervasyon", v = "3.8" }, new { bg = "var(--yellow-soft)", ic = "bi-star-fill", c = "var(--yellow)", t = "Yorum Yapan", s = "Müşteri oranı", v = "%68" }, new { bg = "var(--purple-soft)", ic = "bi-calendar-heart-fill", c = "var(--purple)", t = "En Yoğun Gün", s = "Haftalık bazda", v = "Cmt" }, new { bg = "var(--teal-soft)", ic = "bi-clock-fill", c = "var(--teal)", t = "En Yoğun Saat", s = "Rezervasyon saati", v = "20:00" }, };
+                    }
+                    @foreach (var m in mets)
+                    {
+                        <div class="mtl-item">
+                            <div class="mtl-icon" style="background:@m.bg;"><i class="bi @m.ic" style="color:@m.c;"></i></div>
+                            <div><div class="mtl-title">@m.t</div><div class="mtl-sub">@m.s</div></div>
+                            <div class="mtl-val">@m.v</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- METRIC TILES -->
+<div class="metric-grid">
+    @{
+        var tiles = new[] { new { cls = "mt-amber", icon = "bi-calendar-day-fill", ic = "#c8861e", lbl = "Bugünkü Rez.", val = "7" }, new { cls = "mt-sky", icon = "bi-calendar-week-fill", ic = "#2563eb", lbl = "Bu Haftaki Rez.", val = "34" }, new { cls = "mt-sage", icon = "bi-calendar-month-fill", ic = "#16a34a", lbl = "Bu Ayki Rez.", val = "112" }, new { cls = "mt-lemon", icon = "bi-eye-fill", ic = "#b45309", lbl = "Yayındaki Yorum", val = "428" }, new { cls = "mt-rose", icon = "bi-eye-slash-fill", ic = "#dc2626", lbl = "Gizli Yorum", val = "72" }, new { cls = "mt-mint", icon = "bi-basket3-fill", ic = "#0d9488", lbl = "Aktif Ürün", val = "62" }, new { cls = "mt-lavender", icon = "bi-tags-fill", ic = "#7c3aed", lbl = "Aktif Kategori", val = "4" }, new { cls = "mt-peach", icon = "bi-person-fill-check", ic = "#c2410c", lbl = "Toplam Müşteri", val = "384" }, };
+    }
+    @foreach (var t in tiles)
+    {
+        <div class="metric-tile @t.cls">
+            <div class="mt-icon"><i class="bi @t.icon" style="color:@t.ic;font-size:17px;"></i></div>
+            <div><div class="mt-num">@t.val</div><div class="mt-lbl">@t.lbl</div></div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            var tr = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+            var mo = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            var d = new Date();
+            document.getElementById('liveDate').textContent = tr[d.getDay()] + ', ' + d.getDate() + ' ' + mo[d.getMonth()] + ' ' + d.getFullYear();
+        })();
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@{
+    var dotColors = new[] { "#e6a03c", "#3b82f6", "#22c55e", "#8b5cf6", "#14b8a6", "#ef4444", "#f59e0b" };
+    var txtColors = new[] { "var(--accent-dark)", "var(--blue)", "#16a34a", "var(--purple)", "var(--teal)", "var(--red)", "var(--yellow)" };
+    var cats = ViewBag.Categories as IEnumerable<dynamic>;
+    int ci = 0;
+}
+
+<div class="col-xl-5">
+    <div class="sec-card" style="animation-delay:.13s;">
+        <div class="card-head">
+            <div class="ch-icon" style="background:var(--blue-soft);"><i class="bi bi-tags-fill" style="color:var(--blue);"></i></div>
+            <div><div class="sec-title">Kategori Performansı</div><div class="sec-sub">Ürün sayısı ve ortalama fiyat</div></div>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <table class="cmp-table">
+                <thead>
+                    <tr><th>Kategori</th><th>Ürün</th><th>Ort. Fiyat</th><th>Oran</th></tr>
+                </thead>
+                <tbody>
+                    @if (cats != null)
+                    {
+                        @foreach (var c in cats)
+                        {
+                            var dot = dotColors[ci % dotColors.Length];
+                            var pc = txtColors[ci % txtColors.Length];
+                            <tr>
+                                <td><span class="cat-dot" style="background:@dot;"></span><strong>@c.CategoryName</strong></td>
+                                <td><strong>@c.ProductCount</strong></td>
+                                <td style="color:@pc;font-weight:700;">₺ @c.AvgPrice</td>
+                                <td>
+                                    <div style="display:flex;align-items:center;gap:6px;">
+                                        <div style="flex:1;background:#f0ede8;border-radius:4px;height:6px;overflow:hidden;min-width:60px;">
+                                            <div style="width:@(c.Percent)%;height:100%;background:@dot;border-radius:4px;"></div>
+                                        </div>
+                                        <span style="font-size:11px;font-weight:700;color:var(--muted);">%@c.Percent</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            ci++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

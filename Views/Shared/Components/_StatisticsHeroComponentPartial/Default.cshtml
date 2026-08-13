@@ -1,0 +1,19 @@
+﻿<!-- HEADER -->
+<div class="pg-header">
+    <div>
+        <h1 class="pg-title"><i class="bi bi-bar-chart-line-fill me-2" style="color:var(--accent);font-size:20px;vertical-align:middle;"></i>İstatistikler</h1>
+        <p class="pg-sub">Restoranın genel performans ve analiz özeti.</p>
+    </div>
+    <div class="date-badge"><i class="bi bi-calendar3"></i><span id="liveDate"></span></div>
+</div>
+
+<!-- HERO -->
+<div class="hero-banner">
+    <div class="hero-stat"><div class="hero-stat-num ac">@ViewBag.totalReservationCount</div><div class="hero-stat-lbl">Toplam Rezervasyon</div><div class="hero-stat-sub">Tüm zamanlar</div></div>
+
+    <div class="hero-stat"><div class="hero-stat-num">@ViewBag.totalCustomerCount</div><div class="hero-stat-lbl">Kayıtlı Müşteri</div><div class="hero-stat-sub">Bu hafta + @ViewBag.thisWeekTotalGuestCount yeni</div></div>
+
+    <div class="hero-stat"><div class="hero-stat-num ac">@ViewBag.avgScore</div><div class="hero-stat-lbl">Ortalama Puan</div><div class="hero-stat-sub">@ViewBag.totalReviewCount değerlendirme</div></div>
+
+    <div class="hero-stat"><div class="hero-stat-num">@ViewBag.activeProduct</div><div class="hero-stat-lbl">Aktif Ürün</div><div class="hero-stat-sub">@ViewBag.categoryCount kategoride</div></div>
+</div>

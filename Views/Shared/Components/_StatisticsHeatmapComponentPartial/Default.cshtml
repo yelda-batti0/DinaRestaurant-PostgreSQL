@@ -1,0 +1,55 @@
+﻿@{
+    var heatData = ViewBag.HeatData as int[,];
+    var maxVal = (int)ViewBag.MaxVal;
+    var hrs = new[] { "12:00", "14:00", "16:00", "18:00", "20:00", "22:00" };
+    var dys = new[] { "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz" };
+    var hmc = new[] { "#fdf5e6", "#fbe8c0", "#f8d48a", "#f5c054", "#e6a03c", "#c8861e", "#a06815" };
+}
+
+<div class="col-xl-5">
+    <div class="sec-card" style="animation-delay:.20s;">
+        <div class="card-head">
+            <div class="ch-icon" style="background:var(--purple-soft);">
+                <i class="bi bi-clock-fill" style="color:var(--purple);"></i>
+            </div>
+            <div>
+                <div class="sec-title">Rezervasyon Yoğunluğu</div>
+                <div class="sec-sub">Gün & saat bazlı ısı haritası</div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="heatmap-grid">
+                <div></div>
+                @foreach (var d in dys)
+                {
+                    <div class="hm-day-lbl">@d</div>
+                }
+
+                @for (int hr = 0; hr < hrs.Length; hr++)
+                {
+                    <div class="hm-hr-lbl">@hrs[hr]</div>
+                    @for (int dy = 0; dy < 7; dy++)
+                    {
+                        var v = heatData[hr, dy];
+                        var ci = maxVal > 0
+                        ? Math.Min((int)Math.Round((double)v / maxVal * (hmc.Length - 1)), hmc.Length - 1)
+                        : 0;
+                        <div class="hm-cell"
+                             style="background:@hmc[ci];"
+                             data-tip="@dys[dy] @hrs[hr] — @v rezervasyon">
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mt-3" style="font-size:11.5px;color:var(--muted);">
+                <span>Az</span>
+                @foreach (var c in hmc)
+                {
+                    <div style="width:18px;height:10px;border-radius:3px;background:@c;"></div>
+                }
+                <span>Çok</span>
+            </div>
+        </div>
+    </div>
+</div>
