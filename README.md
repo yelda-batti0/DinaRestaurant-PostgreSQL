@@ -121,17 +121,24 @@ Uygulama **ASP.NET Core MVC** üzerine kurulu, veri katmanında **PostgreSQL + E
 
 ## 📸 Ekran Görüntüleri
 
+<img width="2833" height="1628" alt="İstatistikler - 2" src="https://github.com/user-attachments/assets/0d738733-4b04-4c1f-82a5-22c774ee507a" />
+<img width="2827" height="1621" alt="İstatistikler - 1" src="https://github.com/user-attachments/assets/f94ce2af-ebfc-48e7-9a63-bd5c18a093c1" />
+<img width="2839" height="1634" alt="Dashboard Paneli - 2" src="https://github.com/user-attachments/assets/a3efda18-29da-415b-8cb6-377a8b1671dc" />
+<img width="2830" height="1620" alt="Dashboard Paneli - 1" src="https://github.com/user-attachments/assets/a5743e11-bd62-4e66-b27d-5bf79b03de77" />
+<img width="2831" height="1634" alt="Değerlendirme Düzenle" src="https://github.com/user-attachments/assets/21c1246a-7acd-4ea4-8d99-315f15e034eb" />
+<img width="2831" height="1625" alt="Değerlendirme Listesi" src="https://github.com/user-attachments/assets/d432c952-3214-4603-9db1-7581075224b0" />
+<img width="2836" height="1629" alt="Yeni Değerlendirme Oluştur" src="https://github.com/user-attachments/assets/f5cd3268-6641-4bbd-bc6d-9ba05149119a" />
+<img width="2822" height="1637" alt="Rezervasyon Güncelle" src="https://github.com/user-attachments/assets/fb299496-990c-44ce-afae-82905e6c27bc" />
+<img width="2826" height="1632" alt="Rezervasyon Oluştur" src="https://github.com/user-attachments/assets/53e4d038-e3bf-4d30-a82b-a7b8ff3b3a13" />
+<img width="2834" height="1637" alt="Rezervasyon Listesi" src="https://github.com/user-attachments/assets/dbf7771e-72e5-46a8-89f9-8afcb057d7c1" />
+<img width="2833" height="1627" alt="Ürün Düzenle" src="https://github.com/user-attachments/assets/68e01242-9f1f-491f-aa3f-08c0d72642ef" />
+<img width="2834" height="1629" alt="Yeni Ürün Ekle" src="https://github.com/user-attachments/assets/af5bc2fa-2239-4f71-ac9c-2d92c5d94d7a" />
+<img width="2832" height="1640" alt="Ürün Listesi" src="https://github.com/user-attachments/assets/0c0a2377-d6ad-45b5-b296-50fa606a9d15" />
+<img width="2836" height="1628" alt="Yeni Kategori Ekle" src="https://github.com/user-attachments/assets/ae08921c-c1a7-4719-8401-65e73b8abf8f" />
+<img width="2866" height="1624" alt="Kategori Kart Listesi" src="https://github.com/user-attachments/assets/32052f22-7ca9-44b9-84ce-fb7fea8d829c" />
+<img width="2833" height="1621" alt="Kategori Listesi" src="https://github.com/user-attachments/assets/ba7ed2d2-2c7c-4c2d-b72c-99a23a22e3c4" />
+<img width="2831" height="1631" alt="Menü" src="https://github.com/user-attachments/assets/99d45595-e598-4a2f-a57b-3b66b80e23f9" />
 
-
-<div align="center">
-
-| Dashboard Ana Ekran | İstatistik & Grafikler |
-|:---:|:---:|
-| <img src="wwwroot/images/screenshots/dashboard.png" width="420" alt="Dashboard"/> | <img src="wwwroot/images/screenshots/statistics.png" width="420" alt="İstatistikler"/> |
-| **Rezervasyon Isı Haritası** | **Menü Sayfası** |
-| <img src="wwwroot/images/screenshots/heatmap.png" width="420" alt="Isı Haritası"/> | <img src="wwwroot/images/screenshots/menu.png" width="420" alt="Menü"/> |
-
-</div>
 
 ---
 
