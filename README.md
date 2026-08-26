@@ -342,7 +342,6 @@ DinnerMenu/
 
 Veri modeli bilinçli olarak sade tutulmuştur: dört varlık, iki ilişki. Müşteri bilgisi ayrı bir tabloda tutulmaz — rezervasyon ve yorum kayıtları iletişim/isim alanlarını kendi içlerinde taşır.
 
-> ⚠️ Aşağıdaki alan adları `Entities/` klasöründeki sınıflara göre kurgulanmıştır. Kendi property adlarınla birebir eşleşmiyorsa (`Name` / `CustomerName`, `Status` / `IsActive` gibi) bu bloğu güncelle.
 
 ```mermaid
 erDiagram
