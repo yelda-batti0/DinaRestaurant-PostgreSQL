@@ -760,7 +760,6 @@ CREATE DATABASE "DinnerMenuDb"
 }
 ```
 
-> 🔐 Şifrenizi repoya göndermeyin. Geliştirme ortamında User Secrets kullanın:
 > ```bash
 > dotnet user-secrets init
 > dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;..."
